@@ -150,7 +150,7 @@ allLabels = {
     "Resource Settings Production Rate 8" : tk.Label(root, text = " "),
     "Resource Settings Production Rate 9" : tk.Label(root, text = " "),
     "Resource Settings Production Rate 10" : tk.Label(root, text = " "),
-    "Resource Settings Production Rate 11" : tk.Label(root, text = " "),
+    "Resource Settings Production Rate 11" : tk.Label(root, text = "Confirm"),
 
     "Buildings Info Title" : tk.Label(mainFrame, text = " "),
     "Buildings Info Metal": tk.Label(mainFrame, text=" "),
@@ -158,6 +158,9 @@ allLabels = {
     "Buildings Info Deuterium": tk.Label(mainFrame, text=" "),
     "Buildings Info Energy": tk.Label(mainFrame, text=" "),
     "Buildings Info Time": tk.Label(mainFrame, text=" "),
+    "Buildings Info Level": tk.Label(mainFrame, text=" "),
+    "Buildings Info Tech": tk.Label(mainFrame, text="Tech Tree"),
+    "Buildings Info Info": tk.Label(mainFrame, text="Info"),
 
     "Buildings Picture Frame": tk.Label(mainFrame, bg="sky blue", text = " "),
     "Metal Mine": tk.Label(root, bg="grey", text = " "),
@@ -176,6 +179,25 @@ allLabels = {
     "Missile Silo": tk.Label(root, bg="grey", text = " "),
 }
 
+metalRate = tk.StringVar(root)
+metalRate.set(str(currentPlanet.resourceSettings[0]*100.0)+"%")
+crystalRate = tk.StringVar(root)
+crystalRate.set(str(currentPlanet.resourceSettings[1]*100.0)+"%")
+deuteriumRate = tk.StringVar(root)
+deuteriumRate.set(str(currentPlanet.resourceSettings[2]*100.0)+"%")
+solarRate = tk.StringVar(root)
+solarRate.set(str(currentPlanet.resourceSettings[3]*100.0)+"%")
+fusionRate = tk.StringVar(root)
+fusionRate.set(str(currentPlanet.resourceSettings[4]*100.0)+"%")
+satelliteRate = tk.StringVar(root)
+satelliteRate.set(str(currentPlanet.resourceSettings[5]*100.0)+"%")
+allOptionMenus = {"Metal Menu" : tk.OptionMenu(root, metalRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"),
+    "Crystal Menu" : tk.OptionMenu(root, crystalRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"),
+    "Deuterium Menu" : tk.OptionMenu(root, deuteriumRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"),
+    "Solar Menu" : tk.OptionMenu(root, solarRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"),
+    "Fusion Menu" : tk.OptionMenu(root, fusionRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%"),
+    "Satellite Menu" : tk.OptionMenu(root, satelliteRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "0%")}
+
 
 def resize_font(event=None):
     for button in allButtons.values():
@@ -192,6 +214,13 @@ def resize_font(event=None):
         a = int(buttonWidth / textLength)
         b = int(0.75 * buttonHeight)
         button.config(font=("Arial", min(a, b)))
+    for button in allOptionMenus.values():
+        buttonWidth = button.winfo_width()
+        textLength = len(button["text"])
+        buttonHeight = button.winfo_height()
+        a = int(buttonWidth / textLength)
+        b = int(0.75 * buttonHeight)
+        button.config(font=("Arial", min(a, b)))
 
 
 def clearGUI():
@@ -201,6 +230,8 @@ def clearGUI():
         frame.place_forget()
     for label in allLabels.values():
         label.place_forget()
+    for menu in allOptionMenus.values():
+        menu.place_forget()
 
 def displayQueue():
     allFrames["Queue Frame"].place(relx=0.025, rely = 0.685, relwidth = 0.175, relheight = 0.275)
@@ -355,8 +386,7 @@ def examineBuilding(event, buildingName):
     # Make building info pop up in the buildings overview frame
     allLabels["Buildings Info Title"].place(relx = 0.6, rely = 0.01, relwidth = 0.39, relheight = 0.2)
     allLabels["Buildings Info Title"].configure(text = buildingName)
-    allLabels["Buildings Picture Frame"].place(relx = 0.05, rely = 0.05, relwidth = 0.5, relheight = .9)
-    allLabels["Buildings Picture Frame"].configure(text = "Current Level: " + str(currentPlanet.commodities[buildingName]))
+    allLabels["Buildings Picture Frame"].place(relx = 0.01, rely = 0.01, relwidth = 0.58, relheight = .78)
 
     # Access databases for player-specific information
     price = currentPlanet.getPrice("Building", SDB.MasterBuildingsList[buildingName], currentPlanet.commodities[buildingName])
@@ -371,6 +401,10 @@ def examineBuilding(event, buildingName):
     allLabels["Buildings Info Energy"].configure(text = "Energy: " + str(price[3]))
     allLabels["Buildings Info Time"].place(relx=0.6, rely=0.725, relwidth=0.39, relheight=0.1)
     allLabels["Buildings Info Time"].configure(text = str(timeNeeded) + " seconds")
+    allLabels["Buildings Info Level"].place(relx=0.01, rely=0.8, relwidth=0.18, relheight=0.18)
+    allLabels["Buildings Info Level"].configure(text = "Current Level: " + str(currentPlanet.commodities[buildingName]))
+    allLabels["Buildings Info Tech"].place(relx=0.21, rely=0.8, relwidth=0.18, relheight=0.18)
+    allLabels["Buildings Info Info"].place(relx=0.41, rely=0.8, relwidth=0.18, relheight=0.18)
 
     # Display buttons like upgrade, dconstruct, exit
     if (DDB.verifyTechRequirements(currentPlanet, SDB.MasterBuildingsList[buildingName])
@@ -429,18 +463,38 @@ def constructionScreen():
 
 #######################################################################################################################
 
+def changeResourceSettings():
+    currentPlanet.resourceSettings[0] = float(metalRate.get().strip("%"))/100
+    currentPlanet.resourceSettings[1] = float(crystalRate.get().strip("%"))/100
+    currentPlanet.resourceSettings[2] = float(deuteriumRate.get().strip("%"))/100
+    currentPlanet.resourceSettings[3] = float(solarRate.get().strip("%"))/100
+    currentPlanet.resourceSettings[4] = float(fusionRate.get().strip("%"))/100
+    currentPlanet.resourceSettings[5] = float(satelliteRate.get().strip("%"))/100
+    resourceSettings()
+
 
 def resourceSettings():
     global currentView
+    global metalRate, crystalRate, deuteriumRate, solarRate, fusionRate, satelliteRate
     currentView = "Resource Settings"
     clearGUI()
-
-    allLabels["Resource Settings Metal 2"].configure(text= str(universeSpeed*currentPlanet.resourceProductionRate()["Metal Rate"]))
-    allLabels["Resource Settings Metal 8"].configure(text=str(universeSpeed*(100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
-    allLabels["Resource Settings Metal 9"].configure(text=str(universeSpeed*24*(100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
-    allLabels["Resource Settings Metal 10"].configure(text=str(universeSpeed*24*7*(100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
+    metalRate.set(str(currentPlanet.resourceSettings[0] * 100.0) + "%")
+    crystalRate.set(str(currentPlanet.resourceSettings[1] * 100.0) + "%")
+    deuteriumRate.set(str(currentPlanet.resourceSettings[2] * 100.0) + "%")
+    solarRate.set(str(currentPlanet.resourceSettings[3] * 100.0) + "%")
+    fusionRate.set(str(currentPlanet.resourceSettings[4] * 100.0) + "%")
+    satelliteRate.set(str(currentPlanet.resourceSettings[5] * 100.0) + "%")
+    allLabels["Resource Settings Metal 2"].configure(
+        text=str(universeSpeed * currentPlanet.resourceProductionRate()["Metal Rate"]))
+    allLabels["Resource Settings Metal 8"].configure(
+        text=str(universeSpeed * (100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
+    allLabels["Resource Settings Metal 9"].configure(
+        text=str(universeSpeed * 24 * (100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
+    allLabels["Resource Settings Metal 10"].configure(
+        text=str(universeSpeed * 24 * 7 * (100 + currentPlanet.resourceProductionRate()["Metal Rate"])))
     allLabels["Resource Settings Metal 11"].configure(text=str(currentPlanet.storage[0]))
-    allLabels["Resource Settings Crystal 3"].configure(text=str(universeSpeed*currentPlanet.resourceProductionRate()["Crystal Rate"]))
+    allLabels["Resource Settings Crystal 3"].configure(
+        text=str(universeSpeed * currentPlanet.resourceProductionRate()["Crystal Rate"]))
     allLabels["Resource Settings Crystal 8"].configure(
         text=str(universeSpeed*(33 + currentPlanet.resourceProductionRate()["Crystal Rate"])))
     allLabels["Resource Settings Crystal 9"].configure(
@@ -448,7 +502,8 @@ def resourceSettings():
     allLabels["Resource Settings Crystal 10"].configure(
         text=str(universeSpeed*24 * 7 * (33 + currentPlanet.resourceProductionRate()["Crystal Rate"])))
     allLabels["Resource Settings Crystal 11"].configure(text=str(currentPlanet.storage[1]))
-    allLabels["Resource Settings Deuterium 4"].configure(text=str(universeSpeed*currentPlanet.resourceProductionRate()["Deuterium Rate"]))
+    allLabels["Resource Settings Deuterium 4"].configure(
+        text=str(universeSpeed * currentPlanet.resourceProductionRate()["Deuterium Rate"]))
     allLabels["Resource Settings Deuterium 6"].configure(
         text=str(universeSpeed*currentPlanet.resourceProductionRate()["Fusion Rate"]))
     allLabels["Resource Settings Deuterium 8"].configure(
@@ -459,11 +514,16 @@ def resourceSettings():
         text=str(universeSpeed*24 * 7 * (currentPlanet.resourceProductionRate()["Net Deuterium"])))
     allLabels["Resource Settings Deuterium 11"].configure(text=str(currentPlanet.storage[2]))
     allLabels["Resource Settings Energy 2"].configure(text=str(currentPlanet.resourceProductionRate()["Metal Energy"]))
-    allLabels["Resource Settings Energy 3"].configure(text=str(currentPlanet.resourceProductionRate()["Crystal Energy"]))
-    allLabels["Resource Settings Energy 4"].configure(text=str(currentPlanet.resourceProductionRate()["Deuterium Energy"]))
-    allLabels["Resource Settings Energy 5"].configure(text=str(currentPlanet.resourceProductionRate()["Solar Production"]))
-    allLabels["Resource Settings Energy 6"].configure(text=str(currentPlanet.resourceProductionRate()["Fusion Production"]))
-    allLabels["Resource Settings Energy 7"].configure(text=str(currentPlanet.resourceProductionRate()["Satellite Production"]))
+    allLabels["Resource Settings Energy 3"].configure(
+        text=str(currentPlanet.resourceProductionRate()["Crystal Energy"]))
+    allLabels["Resource Settings Energy 4"].configure(
+        text=str(currentPlanet.resourceProductionRate()["Deuterium Energy"]))
+    allLabels["Resource Settings Energy 5"].configure(
+        text=str(currentPlanet.resourceProductionRate()["Solar Production"]))
+    allLabels["Resource Settings Energy 6"].configure(
+        text=str(currentPlanet.resourceProductionRate()["Fusion Production"]))
+    allLabels["Resource Settings Energy 7"].configure(
+        text=str(currentPlanet.resourceProductionRate()["Satellite Production"]))
     allLabels["Resource Settings Energy 8"].configure(
         text=str(currentPlanet.resourceProductionRate()["Net Energy"]))
     allLabels["Resource Settings Energy 9"].configure(
@@ -475,10 +535,16 @@ def resourceSettings():
     for j in range(6):
         for i in range(12):
             allLabels["Resource Settings " + titleList[j] + str(i)].place(relx=j/6+0.01, rely=i/12+0.005, relwidth=1/6-0.02, relheight = 1/12-0.01)
+    allOptionMenus["Metal Menu"].place(relx=5/6+0.01, rely = 2/12 + 0.005, relwidth = 1/6 - 0.02, relheight = 1/12 - 0.01)
+    allOptionMenus["Crystal Menu"].place(relx=5 / 6 + 0.01, rely=3 / 12 + 0.005, relwidth=1 / 6 - 0.02, relheight=1 / 12 - 0.01)
+    allOptionMenus["Deuterium Menu"].place(relx=5 / 6 + 0.01, rely=4 / 12 + 0.005, relwidth=1 / 6 - 0.02, relheight=1 / 12 - 0.01)
+    allOptionMenus["Solar Menu"].place(relx=5 / 6 + 0.01, rely=5 / 12 + 0.005, relwidth=1 / 6 - 0.02, relheight=1 / 12 - 0.01)
+    allOptionMenus["Fusion Menu"].place(relx=5 / 6 + 0.01, rely=6 / 12 + 0.005, relwidth=1 / 6 - 0.02, relheight=1 / 12 - 0.01)
+    allOptionMenus["Satellite Menu"].place(relx=5 / 6 + 0.01, rely=7 / 12 + 0.005, relwidth=1 / 6 - 0.02, relheight=1 / 12 - 0.01)
 
 
 allButtons["Resource Management"].configure(command = resourceSettings)
-
+allLabels["Resource Settings Production Rate 11"].bind("<Button-1>", lambda event:changeResourceSettings())
 
 
 #######################################################################################################################
