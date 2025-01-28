@@ -30,7 +30,7 @@ fleetAcitivity = []
 
 
 #Keeps track of all buildings, research, ships, and defense building/deconstructing activity in the universe
-# [planet (instance), commodity (instance), increment (amount), end time (seconds after epoch), purchase type]
+# [planet (instance), commodity (instance), increment (amount), end time (seconds after epoch), purchase type, price]
 purchaseQueue = []
 
 
@@ -67,7 +67,7 @@ def buildingCashier(planet, commodity):
         planet.resources[0] -= price[0]
         planet.resources[1] -= price[1]
         planet.resources[2] -= price[2]
-        purchaseQueue.append([planet, commodity, 1, endTime, "Building"])
+        purchaseQueue.append([planet, commodity, 1, endTime, "Building", price])
         planet.buildingQueue.append([commodity, currentLevel + 1, endTime])
         
         
@@ -85,16 +85,29 @@ def updatePurchaseQueue():
             elif item[4] == "Ships And Defense":
                 planetList[item[0].name].shipyardQueue = []
             purchaseQueue.pop(i)
-            i+=1
+        i+=1
+
+
+def cancelConstruction(planet, purchaseType):
+    i = 0
+    L = len(purchaseQueue)
+    while i < L:
+        if purchaseQueue[i][0] == planet and purchaseQueue[i][4] == purchaseType:
+            planetList[planet.name].resources[0] += purchaseQueue[i][5][0]
+            planetList[planet.name].resources[1] += purchaseQueue[i][5][1]
+            planetList[planet.name].resources[2] += purchaseQueue[i][5][2]
+            planetList[planet.name].buildingQueue = []
+            purchaseQueue.pop(i)
+            return
         i+=1
 
 
 def updateResources():
     for planet in planetList.values():
         production = planet.resourceProductionRate()
-        planet.resources[0] = min(planet.storage[0], planet.resources[0] + universeSpeed*(100+production["Metal Rate"])/3600)
-        planet.resources[1] = min(planet.storage[1], planet.resources[1] + universeSpeed*(30+production["Crystal Rate"])/3600)
-        planet.resources[2] = max(0, min(planet.storage[2], planet.resources[2] + universeSpeed*production["Net Deuterium"]/3600))
+        planet.resources[0] = min(planet.storage()[0], planet.resources[0] + universeSpeed*(100+production["Metal Rate"])/3600)
+        planet.resources[1] = min(planet.storage()[1], planet.resources[1] + universeSpeed*(30+production["Crystal Rate"])/3600)
+        planet.resources[2] = max(0, min(planet.storage()[2], planet.resources[2] + universeSpeed*production["Net Deuterium"]/3600))
         planet.resources[3] = production["Net Energy"]
 
 

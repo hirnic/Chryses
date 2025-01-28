@@ -32,7 +32,6 @@ class Planet:
         self.ownerName = owner                                #Owner of planet
         self.resources = resources                            #Resources on planet
         self.resourceSettings = [1,1,1,1,1,1]                 #Metal, Crystal, Deuterium, Solar, Fusion, Satellite rates
-        self.storage = [10000, 10000, 10000]                  #How much of each resource can the planet store
         self.commodities = {"Metal Mine": 0,
                             "Crystal Mine": 0,
                             "Deuterium Synthesizer": 0,
@@ -95,6 +94,12 @@ class Planet:
         # Planet.moons = []                                     #Moons belonging to planet
     def __repr__(self):
         return f"{self.name}"
+    def storage(self):
+        capacityList = [10000, 20000, 40000, 75000, 140000, 255000]
+        for i in range(15):
+            capacityList.append(2*capacityList[-1]-capacityList[-5])
+        return [capacityList[self.commodities["Metal Storage"]], capacityList[self.commodities["Crystal Storage"]],
+                capacityList[self.commodities["Deuterium Tank"]]]
     def getPrice(self, purchaseType, commodity, currentLevel):
         if purchaseType == "Building":  # Building type
             metal = commodity.baseCost[0] * (commodity.upgradeMultipliers[0] ** currentLevel)

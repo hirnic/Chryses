@@ -2,6 +2,7 @@
 # for individual buildings, ships, defenses....
 
 import Classes
+import tkinter as tk
 
 
 # This is all information about buildings
@@ -307,6 +308,128 @@ MasterDefenseList = { "Rocket Launcher" : Classes.Defense("Rocket Launcher",
                                                       0,
                                                       0)
             }
+
+
+MasterCommoditiesList = {**MasterBuildingsList, **MasterResearchList, **MasterShipsList, **MasterDefenseList}
+
+
+MasterDescriptionList = {  "Metal Mine": "A metal mine makes metal.",
+                            "Crystal Mine": "A crystal mine makes crystal",
+                            "Deuterium Synthesizer" : "A deuterium synthesizer makes deuterium",
+                            "Solar Plant" : "A solar plant makes energy",
+                            "Fusion Reactor" : "A fusion reactor makes energy",
+                            "Robotics Factory" : "A robotics factory is necessary for the construction of a shipyard "
+                                                 "and a nanite factory.",
+                            "Nanite Factory" : "A nanite factory is necessary for the construction of a terraformer. It"
+                                               " also makes the construction of buildings, ships, and defenses faster.",
+                            "Shipyard" : "A shipyard is necessary for making ships and defenses.",
+                            "Metal Storage" : "A metal storage stores metal.",
+                            "Crystal Storage" : "A crystal storage stores crystal.",
+                            "Deuterium Tank" : "A deuterium tank stores deuterium.",
+                            "Research Laboratory" : "A research laboratory is necessary for researching new"
+                                                    " technologies.",
+                            "Terraformer" : "A terraformer gives your planet more space and maybe a cooler look.",
+                            "Missile Silo" : "A missile silo stores interplanetary and antiballistic missiles. More the"
+                                             " merrier!",
+
+                            "Espionage Technology" : {"Research Laboratory" : 3},
+                            "Computer Technology" : {"Research Laboratory" : 1},
+                            "Weapons Technology" : {"Research Laboratory" : 4},
+                            "Shielding Technology" : {"Research Laboratory" : 6,
+                                                      "Energy Technology" : 3},
+                            "Armor Technology" : {"Research Laboratory" : 2},
+                            "Energy Technology" : {"Research Laboratory" : 1},
+                            "Hyperspace Technology" : {"Research Laboratory" : 7,
+                                                       "Energy Technology" : 5,
+                                                       "Shielding Technology" : 5},
+                            "Combustion Drive" : {"Research Laboratory" : 1,
+                                                  "Energy Technology" : 1},
+                            "Impulse Drive" : {"Research Laboratory" : 2,
+                                               "Energy Technology" : 1},
+                            "Hyperspace Drive" : {"Research Laboratory" : 7,
+                                                  "Hyperspace Technology" : 3},
+                            "Laser Technology" : {"Research Laboratory" : 1,
+                                                  "Energy Technology" : 2},
+                            "Ion Technology" : {"Research Laboratory" : 4,
+                                                "Energy Technology" : 4,
+                                                "Laser Technology" : 4},
+                            "Plasma Technology" : {"Research Laboratory" : 5,
+                                                   "Energy Technology" : 8,
+                                                   "Laser Technology" : 10,
+                                                   "Ion Technology" : 5},
+                            "Intergalactic Research Network" : {"Research Laboratory" : 10,
+                                                                "Computer Technology" : 8,
+                                                                "Hyperspace Technology" : 8},
+                            "Astrophysics" : {"Research Laboratory" : 3,
+                                              "Espionage Technology" : 4,
+                                              "Impulse Drive" : 3},
+                            "Graviton Technology" : {"Research Laboratory" : 12},
+
+                            "Small Cargo" : {"Shipyard" : 2,
+                                             "Combustion Drive" : 2},
+                            "Large Cargo" : {"Shipyard" : 4,
+                                             "Combustion Drive" : 6},
+                            "Light Fighter" : {"Shipyard" : 1,
+                                               "Combustion Drive" : 1},
+                            "Heavy Fighter" : {"Shipyard" : 3,
+                                               "Armor Technology" : 2,
+                                               "Impulse Drive" : 2},
+                            "Cruiser" : {"Shipyard" : 5,
+                                         "Impulse Drive" : 2,
+                                         "Ion Technology" : 2},
+                            "Battleship" : {"Shipyard" : 7,
+                                            "Hyperspace Drive" : 4},
+                            "Colony Ship" : {"Shipyard" : 4,
+                                             "Impulse Drive" : 3},
+                            "Recycler" : {"Shipyard" : 4,
+                                          "Combustion Drive" : 6,
+                                          "Shielding Technology" : 2},
+                            "Espionage Probe" : {"Shipyard" : 3,
+                                                 "Combustion Drive" : 3,
+                                                 "Espionage Technology" : 2},
+                            "Bomber" : {"Shipyard" : 8,
+                                        "Impulse Drive" : 3,
+                                        "Plasma Technology" : 5},
+                            "Solar Satellite" : {"Shipyard" : 1},
+                            "Destroyer" : {"Shipyard" : 9,
+                                           "Hyperspace Drive" : 6,
+                                           "Hyperspace Technology" : 5},
+                            "Deathstar" : {"Shipyard" : 12,
+                                           "Hyperspace Drive": 7,
+                                           "Hpyerspace Technology" : 6,
+                                           "Graviton Technology" : 1},
+                            "Battlecruiser" : {"Shipyard" : 8,
+                                               "Hyperspace Technology" : 5,
+                                               "Hyperspace Drive" : 5,
+                                               "Laser Technology" : 12},
+                            "Mega Cargo" : {"Shipyard" : 4,
+                                            "Impulse Drive" : 3},
+
+                            "Rocket Launcher" : {"Shipyard" : 1},
+                            "Light Laser" : {"Shipyard" : 2,
+                                             "Energy Technology" : 1,
+                                             "Laser Technology" : 3},
+                            "Heavy Laser" : {"Shipyard" : 4,
+                                             "Energy Technology" : 3,
+                                             "Laser Technology" : 6},
+                            "Guass Cannon" : {"Shipyard" : 6,
+                                              "Energy Technology" : 6,
+                                              "Weapons Technology" : 3,
+                                              "Shielding Technology" : 1},
+                            "Ion Cannon" : {"Shipyard" : 4,
+                                            "Ion Technology" : 4},
+                            "Plasma Turret" : {"Shipyard" : 8,
+                                               "Plasma Technology" : 7},
+                            "Small Shield Dome" : {"Shipyard" : 1,
+                                                   "Shielding Technology" : 2},
+                            "Large Shield Dome" : {"Shipyard": 6,
+                                                   "Shielding Technology" : 6},
+                            "Antiballistic Missile" : {"Shipyard" : 1,
+                                                       "Missile Silo" : 2},
+                            "Interplanetary Missile" : {"Shipyard" : 1,
+                                                        "Missile Silo" : 4,
+                                                        "Hyperspace Drive" : 1}
+}
 
 
 # This is the comprehensive technology tree. It is constructed using the previous dictionaries.
