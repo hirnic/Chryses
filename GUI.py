@@ -15,8 +15,9 @@ import time
 
 
 # from tkinter import ttk
-player = 0
+
 currentPlanet = Classes.Planet("Zebulon", [-1,-1,-1], -1, [9999999,9999999,9999999,9999999])
+currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
 currentView = "Overview"  #What screen is the player looking at?
 screen = 0
 universeSpeed = DDB.universeSpeed
@@ -264,6 +265,7 @@ def displayQueue():
         allButtons["Cancel Building"].place(relx=0.01, rely=0.21, relwidth=0.18, relheight=0.18)
         allButtons["Cancel Building"].configure(text = "X", command = lambda:DDB.cancelConstruction(currentPlanet, "Building"))
         allLabels["Buildings Queue"].place(relx=0.2, rely = 0.21, relwidth = 0.78, relheight = 0.18)
+        
 
 def sideNav():
     allButtons["Overview"].place(relx=0.01, rely=0, relwidth=0.19, relheight=0.075)
@@ -373,46 +375,54 @@ def galaxyScreen():
 ### Button: View Defenses
 
 #######################################################################################################################
-def examineCommodity(event, purchaseType, commodityName, amount = 1):
+
+
+def purchaseCommodity(commodityName, purchaseType):
+    DDB.buildingCashier(currentPlanet, SDB.MasterCommoditiesList[commodityName], purchaseType)
+    viewDictionary[currentView]
+    examineCommodity(root, purchaseType, commodityName)
+
+
+def examineCommodity(event, purchaseType, commodityName):
     # Make building info pop up in the buildings overview frame
     allLabels["Commodity Info Title"].place(relx = 0.6, rely = 0.01, relwidth = 0.39, relheight = 0.2)
     allLabels["Commodity Info Title"].configure(text = commodityName)
     allLabels["Picture Frame"].place(relx = 0.01, rely = 0.01, relwidth = 0.58, relheight = .88)
 
     # Access databases for player-specific information
-    price = currentPlanet.getPrice("Building", SDB.MasterCommoditiesList[commodityName],
+    price = currentPlanet.getPrice(purchaseType, SDB.MasterCommoditiesList[commodityName],
                                    currentPlanet.commodities[commodityName])
-    timeNeeded = currentPlanet.getTime("Building", SDB.MasterCommoditiesList[commodityName],
+    timeNeeded = currentPlanet.getTime(purchaseType, SDB.MasterCommoditiesList[commodityName],
                                        currentPlanet.commodities[commodityName], universeSpeed)
-    allLabels["Commodity Info Metal"].place(relx=0.6, rely=0.225, relwidth=0.39, relheight=0.1)
-    allLabels["Commodity Info Metal"].configure(text = "Metal: " + str(price[0]))
-    allLabels["Commodity Info Crystal"].place(relx=0.6, rely=0.35, relwidth=0.39, relheight=0.1)
-    allLabels["Commodity Info Crystal"].configure(text = "Crystal: " + str(price[1]))
-    allLabels["Commodity Info Deuterium"].place(relx=0.6, rely=0.475, relwidth=0.39, relheight=0.1)
-    allLabels["Commodity Info Deuterium"].configure(text = "Deuterium: " + str(price[2]))
-    allLabels["Commodity Info Energy"].place(relx=0.6, rely=0.6, relwidth=0.39, relheight=0.1)
-    allLabels["Commodity Info Energy"].configure(text = "Energy: " + str(price[3]))
-    allLabels["Commodity Info Time"].place(relx=0.6, rely=0.725, relwidth=0.39, relheight=0.1)
-    allLabels["Commodity Info Time"].configure(text = str(timeNeeded) + " seconds")
-    allLabels["Commodity Info Level"].place(relx=0.01, rely=0.9, relwidth=0.18, relheight=0.09)
-    allLabels["Commodity Info Level"].configure(text = "Current Level: " +
-                                                       str(currentPlanet.commodities[commodityName]))
-    allButtons["Commodity Info Info"].place(relx=0.21, rely=0.9, relwidth=0.38, relheight=0.09)
-    allButtons["Commodity Info Info"].configure(command = lambda:infoPage(commodityName))
-
     # Display buttons like upgrade, dconstruct, exit
     if (DDB.verifyTechRequirements(currentPlanet, SDB.MasterCommoditiesList[commodityName])
-            and DDB.verifyResourceRequirements(purchaseType, currentPlanet, SDB.MasterCommoditiesList[commodityName], amount)):
-        if (purchaseType == "Building" and len(currentPlanet.buildingQueue) == 0)\
-                or (purchaseType == "Research" and True)\
-                or (purchaseType == "Ship" and True)\
-                or (purchaseType == "Defense" and True):
-            allButtons["Purchase Button"].place(relx = 0.75, rely = 0.875, relwidth = 0.225, relheight = 0.1)
-            allButtons["Purchase Button"].configure(command = lambda:purchaseBuilding(commodityName))
+            and DDB.verifyResourceRequirements(purchaseType, currentPlanet, SDB.MasterCommoditiesList[commodityName])):
+        if purchaseType == "Building" and len(currentPlanet.buildingQueue) == 0:
+            allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
+            allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName, purchaseType))
+        elif purchaseType == "Research" and len(currentPlayer.researchQueue) == 0:
+            allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
+            allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName, purchaseType))
         else:
             allButtons["Purchase Button"].place_forget()
     else:
         allButtons["Purchase Button"].place_forget()
+
+    allLabels["Commodity Info Metal"].place(relx=0.6, rely=0.225, relwidth=0.39, relheight=0.1)
+    allLabels["Commodity Info Metal"].configure(text="Metal: " + str(price[0]))
+    allLabels["Commodity Info Crystal"].place(relx=0.6, rely=0.35, relwidth=0.39, relheight=0.1)
+    allLabels["Commodity Info Crystal"].configure(text="Crystal: " + str(price[1]))
+    allLabels["Commodity Info Deuterium"].place(relx=0.6, rely=0.475, relwidth=0.39, relheight=0.1)
+    allLabels["Commodity Info Deuterium"].configure(text="Deuterium: " + str(price[2]))
+    allLabels["Commodity Info Energy"].place(relx=0.6, rely=0.6, relwidth=0.39, relheight=0.1)
+    allLabels["Commodity Info Energy"].configure(text="Energy: " + str(price[3]))
+    allLabels["Commodity Info Time"].place(relx=0.6, rely=0.725, relwidth=0.39, relheight=0.1)
+    allLabels["Commodity Info Time"].configure(text=str(timeNeeded) + " seconds")
+    allLabels["Commodity Info Level"].place(relx=0.01, rely=0.9, relwidth=0.18, relheight=0.09)
+    allLabels["Commodity Info Level"].configure(text="Current Level: " +
+                                                     str(currentPlanet.commodities[commodityName]))
+    allButtons["Commodity Info Info"].place(relx=0.21, rely=0.9, relwidth=0.38, relheight=0.09)
+    allButtons["Commodity Info Info"].configure(command=lambda: infoPage(commodityName))
     # resize_font()
 
 
@@ -471,21 +481,21 @@ def researchScreen():
     allLabels["Shop Panel 16"].place(relx=0.8625, rely=.81, relwidth=.085, relheight=.175)
 
     allLabels["Shop Panel 1"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Espionage Technology"))
-    allLabels["Shop Panel 2"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Crystal Mine"))
-    allLabels["Shop Panel 3"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Deuterium Synthesizer"))
-    allLabels["Shop Panel 4"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Solar Plant"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Fusion Reactor"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Robotics Factory"))
-    allLabels["Shop Panel 7"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Nanite Factory"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Shipyard"))
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Metal Storage"))
-    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Crystal Storage"))
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Deuterium Tank"))
-    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Research Laboratory"))
-    allLabels["Shop Panel 13"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Terraformer"))
-    allLabels["Shop Panel 14"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Missile Silo"))
-    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Terraformer"))
-    allLabels["Shop Panel 16"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Missile Silo"))
+    allLabels["Shop Panel 2"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Computer Technology"))
+    allLabels["Shop Panel 3"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Weapons Technology"))
+    allLabels["Shop Panel 4"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Shielding Technology"))
+    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Armor Technology"))
+    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Energy Technology"))
+    allLabels["Shop Panel 7"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Hyperspace Technology"))
+    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Combustion Drive"))
+    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Impulse Drive"))
+    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Hyperspace Drive"))
+    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Laser Technology"))
+    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Ion Technology"))
+    allLabels["Shop Panel 13"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Plasma Technology"))
+    allLabels["Shop Panel 14"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Intergalactic Research Network"))
+    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Astrophysics"))
+    allLabels["Shop Panel 16"].bind("<Button-1>", lambda event: examineCommodity(event, "Research", "Graviton Technology"))
 
     # Display research
     # Place all the buttons we can use
@@ -497,10 +507,7 @@ def researchScreen():
 
 #######################################################################################################################
 
-def purchaseBuilding(buildingName):
-    DDB.buildingCashier(currentPlanet, SDB.MasterCommoditiesList[buildingName])
-    constructionScreen()
-    examineCommodity(root, "Building", buildingName)
+
 
 def constructionScreen():
     global currentView
@@ -675,8 +682,10 @@ allLabels["Resource Settings Source 0"].bind("<Button-1>", lambda event:playerOv
 
 # Carries out the process for beginning a new game.
 def newGame():
+    global currentPlayer
     global currentPlanet
     DDB.newPlayer("Piggy", "Pig Farm")
+    currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Pig Farm"]
     playerOverview()
 

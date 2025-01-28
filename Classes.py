@@ -8,6 +8,7 @@ class Player:
     def __init__(self, name, planets):
         self.name = name                                      # Name
         self.planets = planets                                # List of all planets owned by player
+        self.researchQueue = []                               # List of all ongoing research
         self.fleets = []                                      # All fleet action owned by the player
         self.friends = []                                     # List of friends
         self.messages = []                                    # List of messages in player's inbox
@@ -26,10 +27,10 @@ class Player:
 
 
 class Planet:
-    def __init__(self, name, coords, owner, resources):
+    def __init__(self, name, coords, ownerName, resources):
         self.name = name                                      #Name of planet
         self.coords = coords                                  #Location of planet
-        self.ownerName = owner                                #Owner of planet
+        self.owner = ownerName                                #Owner of planet (string)
         self.resources = resources                            #Resources on planet
         self.resourceSettings = [1,1,1,1,1,1]                 #Metal, Crystal, Deuterium, Solar, Fusion, Satellite rates
         self.commodities = {"Metal Mine": 0,
@@ -122,6 +123,11 @@ class Planet:
             timeNeeded = (upgradePrice[0] + upgradePrice[1]) / (
                         2500 * (1 + self.commodities["Robotics Factory"]) * universeSpeed * (2 ** self.commodities["Nanite Factory"]))
             return max(1, int(3600 * timeNeeded))
+        if purchaseType == "Research":
+            upgradePrice = self.getPrice(purchaseType, commodity, currentLevel)
+            timeNeeded = (upgradePrice[0] + upgradePrice[1]) / (1000 * (1 + self.commodities["Research Laboratory"]) * universeSpeed)
+            return max(1, int(timeNeeded))
+
 
     def resourceProductionRate(self):
         metalEnergy = int(-1 * 22 * self.commodities["Metal Mine"] * 1.1 ** (self.commodities["Metal Mine"]-1) * \
