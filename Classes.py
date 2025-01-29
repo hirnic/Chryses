@@ -96,7 +96,7 @@ class Planet:
         self.shipyardQueue = []  # List of all ships/defenses in production  (Max 15)
         self.fleets = []  # All fleet action planet is involved in
         self.debris = [0, 0, 0]  # Resources in debris field
-        # Planet.moons = []                                     #Moons belonging to planet
+        # Planet.moons = []      # Moons belonging to planet
 
     def __repr__(self):
         return f"{self.name}"

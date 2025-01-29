@@ -221,18 +221,18 @@ allOptionMenus = {
 allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5, 3),
                  "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(12, 7),
                  "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(7, 7),
-                 "Deuterium Synthesizer" :tk.PhotoImage(file = "Deuterium_Synthesizer1.png").subsample(10,7),
+                 "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(10, 7),
                  "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7),
-                 "Robotics Factory": tk.PhotoImage(file = "Robotics_Factory1.png").subsample(11,7),
-                 "Shipyard": tk.PhotoImage(file = "Shipyard1.png").subsample(12,7)}
+                 "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(11, 7),
+                 "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(12, 7)}
 
 allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(2, 2),
                     "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(3, 3),
                     "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(2, 3),
-                    "Deuterium Synthesizer": tk.PhotoImage(file = "Deuterium_Synthesizer1.png").subsample(3,3),
+                    "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(3, 3),
                     "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 3),
-                    "Robotics Factory": tk.PhotoImage(file = "Robotics_Factory1.png").subsample(3,3),
-                    "Shipyard": tk.PhotoImage(file = "Shipyard1.png").subsample(3,3)}
+                    "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(3, 3),
+                    "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(3, 3)}
 
 # def resize_font(event=None):
 #     for button in allButtons.values():
@@ -276,33 +276,42 @@ def clearGUI():
 def displayQueue():
     allFrames["Queue Frame"].place(relx=0.01, rely=0.685, relwidth=0.19, relheight=0.275)
     allLabels["Queue Title"].place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.18)
+
     if len(currentPlanet.buildingQueue) == 0:
         allLabels["Buildings Queue"].configure(text="Buildings: None")
         allLabels["Buildings Queue"].place(relx=0.01, rely=0.21, relwidth=0.98, relheight=0.18)
     else:
-        allLabels["Buildings Queue"].configure(text="Buildings: " + currentPlanet.buildingQueue[0][0].name + ", " + str(
-            int(currentPlanet.buildingQueue[0][2] - time.time())))
+        timeRemaining = currentPlanet.buildingQueue[0][2] + currentPlanet.getTime(
+                currentPlanet.buildingQueue[0][0], currentPlanet.buildingQueue[0][1]-1, universeSpeed) - time.time()
+        allLabels["Buildings Queue"].configure(text="Buildings: " + currentPlanet.buildingQueue[0][0].name + ", "
+                                                    + str(int(timeRemaining)))
         allButtons["Cancel Building"].place(relx=0.01, rely=0.21, relwidth=0.18, relheight=0.18)
-        allButtons["Cancel Building"].configure(text="X",
-                                                command=lambda: DDB.cancelPurchase(currentPlanet, "Building"))
+        allButtons["Cancel Building"].configure(text="X", command=lambda: DDB.cancelPurchase(
+            currentPlanet, currentPlanet.buildingQueue[0][0]))
         allLabels["Buildings Queue"].place(relx=0.2, rely=0.21, relwidth=0.78, relheight=0.18)
+
     if len(currentPlayer.researchQueue) == 0:
         allLabels["Research Queue"].configure(text="Research: None")
         allLabels["Research Queue"].place(relx=0.01, rely=0.41, relwidth=0.98, relheight=0.18)
     else:
-        allLabels["Research Queue"].configure(text="Research: " + currentPlayer.researchQueue[0][0].name + ", " + str(
-            int(currentPlayer.researchQueue[0][2] - time.time())))
+        timeRemaining = currentPlayer.researchQueue[0][2] + currentPlanet.getTime(
+            currentPlayer.researchQueue[0][0], currentPlayer.researchQueue[0][1] - 1, universeSpeed) - time.time()
+        allLabels["Research Queue"].configure(text="Research: " + currentPlayer.researchQueue[0][0].name + ", "
+                                                   + str(int(timeRemaining)))
         allButtons["Cancel Research"].place(relx=0.01, rely=0.41, relwidth=0.18, relheight=0.18)
-        allButtons["Cancel Research"].configure(text="X",
-                                                command=lambda: DDB.cancelPurchase(currentPlanet, "Research"))
+        allButtons["Cancel Research"].configure(text="X", command=lambda: DDB.cancelPurchase(
+            currentPlanet, currentPlayer.researchQueue[0][0]))
         allLabels["Research Queue"].place(relx=0.2, rely=0.41, relwidth=0.78, relheight=0.18)
+
     if len(currentPlanet.shipyardQueue) == 0:
         allLabels["Shipyard Queue"].configure(text="Shipyard: None")
         allLabels["Shipyard Queue"].place(relx=0.01, rely=0.61, relwidth=0.98, relheight=0.18)
     else:
+        timeRemaining = currentPlanet.shipyardQueue[0][3] + currentPlanet.shipyardQueue[0][1] * currentPlanet.getTime(
+            currentPlanet.shipyardQueue[0][0], None, universeSpeed) - time.time()
         allLabels["Shipyard Queue"].configure(text="Shipyard: " + currentPlanet.shipyardQueue[0][0].name
-                                                   + " (" + str(currentPlanet.shipyardQueue[0][1]) + ")" + ", " + str(
-            int(currentPlanet.shipyardQueue[0][2] - time.time())))
+                                                   + " (" + str(currentPlanet.shipyardQueue[0][1]) + ")" + ", "''
+                                                   + str(int(timeRemaining)))
         allLabels["Shipyard Queue"].place(relx=0.01, rely=0.61, relwidth=0.98, relheight=0.18)
 
 
@@ -376,9 +385,9 @@ def updateEverything():
     buildingQueueLength = len(currentPlanet.buildingQueue)
     researchQueueLength = len(currentPlayer.researchQueue)
     shipyardQueueLength = len(currentPlanet.shipyardQueue)
-    DDB.updatePurchaseQueue()
-    if len(currentPlanet.buildingQueue) != buildingQueueLength\
-            or len(currentPlayer.researchQueue) != researchQueueLength\
+    DDB.executePurchases()
+    if len(currentPlanet.buildingQueue) != buildingQueueLength \
+            or len(currentPlayer.researchQueue) != researchQueueLength \
             or len(currentPlanet.shipyardQueue) != shipyardQueueLength:
         viewDictionary[currentView]()
     DDB.updateResources()
@@ -449,16 +458,35 @@ def examineCommodity(event, commodityName):
     # Display buttons like upgrade, dconstruct, exit
     if (DDB.verifyTechRequirements(currentPlanet, SDB.MasterCommoditiesList[commodityName])
             and DDB.verifyResourceRequirements(currentPlanet, SDB.MasterCommoditiesList[commodityName])):
+
         if (type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Building"
-                and len(currentPlanet.buildingQueue) < 5)\
-                or (type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Research"
-                    and len(currentPlayer.researchQueue) == 0):
+                and len(currentPlanet.buildingQueue) < 5):
             allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
             allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName))
+            if ((commodityName == "Robotics Factory" or commodityName == "Shipyard"
+                 or commodityName == "Nanite Factory")
+                    and len(currentPlanet.shipyardQueue) > 0):
+                print(currentPlanet.shipyardQueue)
+                allButtons["Purchase Button"].place_forget()
+            if commodityName == "Research Laboratory" and len(currentPlayer.researchQueue) > 0:
+                allButtons["Purchase Button"].place_forget()
+
+        elif (type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Research"
+              and len(currentPlayer.researchQueue) == 0):
+            allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
+            allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName))
+            for planet in currentPlayer.planets:
+                for item in planet.buildingQueue:
+                    if item[0].name == "Research Laboratory":
+                        allButtons["Purchase Button"].place_forget()
+
         elif ((type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Ship"
-              or type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Defense")):
+               or type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Defense")):
             allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
             allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName))
+            for item in currentPlanet.buildingQueue:
+                if item[0].name == "Shipyard" or item[0].name == "Robotics Factory" or item[0].name == "Nanite Factory":
+                    allButtons["Purchase Button"].place_forget()
         else:
             allButtons["Purchase Button"].place_forget()
             purchaseAmount.place_forget()
@@ -557,27 +585,27 @@ def shipyardScreen():
     allLabels["Shop Panel 16"].place_forget()
 
     allLabels["Shop Panel 1"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Small Cargo"))
+                                   lambda event: examineCommodity(event, "Small Cargo"))
     allLabels["Shop Panel 2"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Large Cargo"))
+                                   lambda event: examineCommodity(event, "Large Cargo"))
     allLabels["Shop Panel 3"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Light Fighter"))
+                                   lambda event: examineCommodity(event, "Light Fighter"))
     allLabels["Shop Panel 4"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Heavy Fighter"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event,  "Cruiser"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event,  "Battleship"))
+                                   lambda event: examineCommodity(event, "Heavy Fighter"))
+    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Cruiser"))
+    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Battleship"))
     allLabels["Shop Panel 7"].bind("<Button-1>",
                                    lambda event: examineCommodity(event, "Colony Ship"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event,  "Recycler"))
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event,  "Espionage Probe"))
+    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Recycler"))
+    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Espionage Probe"))
     allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Bomber"))
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event,  "Solar Satellite"))
-    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event,  "Destroyer"))
+    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Solar Satellite"))
+    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Destroyer"))
     allLabels["Shop Panel 13"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event,  "Deathstar"))
+                                    lambda event: examineCommodity(event, "Deathstar"))
     allLabels["Shop Panel 14"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event,  "Battlecruiser"))
-    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event,  "Mega Cargo"))
+                                    lambda event: examineCommodity(event, "Battlecruiser"))
+    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Mega Cargo"))
 
     # Place all the buttons we can use
 
@@ -613,29 +641,29 @@ def researchScreen():
     allLabels["Shop Panel 16"].place(relx=0.8625, rely=.81, relwidth=.085, relheight=.175)
 
     allLabels["Shop Panel 1"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Espionage Technology"))
+                                   lambda event: examineCommodity(event, "Espionage Technology"))
     allLabels["Shop Panel 2"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event,  "Computer Technology"))
+                                   lambda event: examineCommodity(event, "Computer Technology"))
     allLabels["Shop Panel 3"].bind("<Button-1>",
                                    lambda event: examineCommodity(event, "Weapons Technology"))
     allLabels["Shop Panel 4"].bind("<Button-1>",
                                    lambda event: examineCommodity(event, "Shielding Technology"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event,  "Armor Technology"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event,  "Energy Technology"))
+    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Armor Technology"))
+    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Energy Technology"))
     allLabels["Shop Panel 7"].bind("<Button-1>",
                                    lambda event: examineCommodity(event, "Hyperspace Technology"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event,  "Combustion Drive"))
+    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Combustion Drive"))
     allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Impulse Drive"))
     allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Hyperspace Drive"))
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event,  "Laser Technology"))
-    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event,  "Ion Technology"))
+    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Laser Technology"))
+    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Ion Technology"))
     allLabels["Shop Panel 13"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event,  "Plasma Technology"))
+                                    lambda event: examineCommodity(event, "Plasma Technology"))
     allLabels["Shop Panel 14"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event,  "Intergalactic Research Network"))
+                                    lambda event: examineCommodity(event, "Intergalactic Research Network"))
     allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Astrophysics"))
     allLabels["Shop Panel 16"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event,  "Graviton Technology"))
+                                    lambda event: examineCommodity(event, "Graviton Technology"))
 
     # Display research
     # Place all the buttons we can use
