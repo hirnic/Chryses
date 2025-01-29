@@ -450,14 +450,13 @@ def examineCommodity(event, commodityName):
     if (DDB.verifyTechRequirements(currentPlanet, SDB.MasterCommoditiesList[commodityName])
             and DDB.verifyResourceRequirements(currentPlanet, SDB.MasterCommoditiesList[commodityName])):
         if (type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Building"
-                and len(currentPlanet.buildingQueue) == 0)\
+                and len(currentPlanet.buildingQueue) < 5)\
                 or (type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Research"
                     and len(currentPlayer.researchQueue) == 0):
             allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
             allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName))
         elif ((type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Ship"
-              or type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Defense")
-              and len(currentPlanet.shipyardQueue) == 0):
+              or type(SDB.MasterCommoditiesList[commodityName]).__name__ == "Defense")):
             allButtons["Purchase Button"].place(relx=0.75, rely=0.875, relwidth=0.225, relheight=0.1)
             allButtons["Purchase Button"].configure(command=lambda: purchaseCommodity(commodityName))
         else:
