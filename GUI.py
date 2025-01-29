@@ -221,14 +221,18 @@ allOptionMenus = {
 allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5, 3),
                  "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(12, 7),
                  "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(7, 7),
-                 # "Deuterium Synthesizer" : tk.PhotoImage(file = "Crystal_Mine1.png").subsample(7,7),
-                 "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7)}
+                 "Deuterium Synthesizer" :tk.PhotoImage(file = "Deuterium_Synthesizer1.png").subsample(10,7),
+                 "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7),
+                 "Robotics Factory": tk.PhotoImage(file = "Robotics_Factory1.png").subsample(11,7),
+                 "Shipyard": tk.PhotoImage(file = "Shipyard1.png").subsample(12,7)}
 
 allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(2, 2),
                     "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(3, 3),
                     "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(2, 3),
-                    # "Deuterium Synthesizer" : tk.PhotoImage(file = "Crystal_Mine1.png").subsample(7,7),
-                    "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 3)}
+                    "Deuterium Synthesizer": tk.PhotoImage(file = "Deuterium_Synthesizer1.png").subsample(3,3),
+                    "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 3),
+                    "Robotics Factory": tk.PhotoImage(file = "Robotics_Factory1.png").subsample(3,3),
+                    "Shipyard": tk.PhotoImage(file = "Shipyard1.png").subsample(3,3)}
 
 # def resize_font(event=None):
 #     for button in allButtons.values():
@@ -671,18 +675,18 @@ def constructionScreen():
     allLabels["Shop Panel 1"].bind("<Button-1>", lambda event: examineCommodity(event, "Metal Mine"))
     allLabels["Shop Panel 2"].configure(image=allThumbnails["Crystal Mine"])
     allLabels["Shop Panel 2"].bind("<Button-1>", lambda event: examineCommodity(event, "Crystal Mine"))
-    allLabels["Shop Panel 3"].configure(image=allThumbnails["Default"])
+    allLabels["Shop Panel 3"].configure(image=allThumbnails["Deuterium Synthesizer"])
     allLabels["Shop Panel 3"].bind("<Button-1>",
                                    lambda event: examineCommodity(event, "Deuterium Synthesizer"))
     allLabels["Shop Panel 4"].configure(image=allThumbnails["Solar Plant"])
     allLabels["Shop Panel 4"].bind("<Button-1>", lambda event: examineCommodity(event, "Solar Plant"))
     allLabels["Shop Panel 5"].configure(image=allThumbnails["Default"])
     allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Fusion Reactor"))
-    allLabels["Shop Panel 6"].configure(image=allThumbnails["Default"])
+    allLabels["Shop Panel 6"].configure(image=allThumbnails["Robotics Factory"])
     allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Robotics Factory"))
     allLabels["Shop Panel 7"].configure(image=allThumbnails["Default"])
     allLabels["Shop Panel 7"].bind("<Button-1>", lambda event: examineCommodity(event, "Nanite Factory"))
-    allLabels["Shop Panel 8"].configure(image=allThumbnails["Default"])
+    allLabels["Shop Panel 8"].configure(image=allThumbnails["Shipyard"])
     allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Shipyard"))
     allLabels["Shop Panel 9"].configure(image=allThumbnails["Default"])
     allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Metal Storage"))
