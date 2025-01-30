@@ -8,6 +8,7 @@
 # code line-by-line, so the main menu starts at the bottom and the more deeply-nested commands are at the top.
 
 import Classes
+import FleetMissions
 import SDB
 import DDB
 import tkinter as tk
@@ -18,6 +19,7 @@ import time
 currentPlanet = Classes.Planet("Zebulon", [-1, -1, -1], -1, [9999999, 9999999, 9999999, 9999999])
 currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
 currentView = "Overview"  # What screen is the player looking at?
+currentCommodity = None
 screen = 0
 universeSpeed = DDB.universeSpeed
 
@@ -307,7 +309,7 @@ def displayQueue():
         allLabels["Shipyard Queue"].configure(text="Shipyard: None")
         allLabels["Shipyard Queue"].place(relx=0.01, rely=0.61, relwidth=0.98, relheight=0.18)
     else:
-        timeRemaining = currentPlanet.shipyardQueue[0][3] + currentPlanet.shipyardQueue[0][1] * currentPlanet.getTime(
+        timeRemaining = currentPlanet.shipyardQueue[0][2] + currentPlanet.shipyardQueue[0][1] * currentPlanet.getTime(
             currentPlanet.shipyardQueue[0][0], None, universeSpeed) - time.time()
         allLabels["Shipyard Queue"].configure(text="Shipyard: " + currentPlanet.shipyardQueue[0][0].name
                                                    + " (" + str(currentPlanet.shipyardQueue[0][1]) + ")" + ", "''
@@ -389,25 +391,13 @@ def updateEverything():
     if len(currentPlanet.buildingQueue) != buildingQueueLength \
             or len(currentPlayer.researchQueue) != researchQueueLength \
             or len(currentPlanet.shipyardQueue) != shipyardQueueLength:
-        viewDictionary[currentView]()
+        if currentCommodity is not None:
+            examineCommodity(None, currentCommodity)
+        else:
+            viewDictionary[currentView]()
     DDB.updateResources()
 
-    canvas.after(1000, updateEverything)
-
-
-#######################################################################################################################
-
-### Button: Manage Fleets
-
-#######################################################################################################################
-
-def fleetsScreen():
-    global currentView
-    currentView = "Fleets"
-    clearGUI()
-    sideNav()
-    # Display defenses
-    # Place all the buttons we can use
+    canvas.after(500, updateEverything)
 
 
 #######################################################################################################################
@@ -421,6 +411,34 @@ def galaxyScreen():
     currentView = "Galaxy"
     clearGUI()
     sideNav()
+    # Display defenses
+    # Place all the buttons we can use
+
+
+#######################################################################################################################
+
+### Button: Manage Fleets
+
+#######################################################################################################################
+
+
+
+def fleetsScreen():
+    global currentCommodity
+    currentCommodity = None
+    global currentView
+    currentView = "Fleets"
+    clearGUI()
+    sideNav()
+    topNav()
+    Freet = Classes.Fleet(currentPlanet, None, {"Small Cargo": 1, "Espionage Probe": 1})
+    # print(FleetMissions.flightDistance(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"]))
+    # print(FleetMissions.shipSpeed(currentPlanet, SDB.MasterShipsList["Espionage Probe"]))
+    # print(FleetMissions.shipSpeed(currentPlanet, SDB.MasterShipsList["Small Cargo"]))
+    # print(FleetMissions.fleetSpeed(currentPlanet, Freet))
+    # print(FleetMissions.flightTime(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"], Freet, 1))
+    # print(FleetMissions.fuelPerShip(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"], SDB.MasterShipsList["Small Cargo"], 1))
+    print(FleetMissions.cargoSpace(Freet))
     # Display defenses
     # Place all the buttons we can use
 
@@ -443,6 +461,8 @@ def purchaseCommodity(commodityName):
 
 
 def examineCommodity(event, commodityName):
+    global currentCommodity
+    currentCommodity = commodityName
     # Make building info pop up in the buildings overview frame
     allLabels["Commodity Info Title"].place(relx=0.6, rely=0.01, relwidth=0.39, relheight=0.2)
     allLabels["Commodity Info Title"].configure(text=commodityName)
@@ -518,6 +538,8 @@ def examineCommodity(event, commodityName):
 
 
 def defenseScreen():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     currentView = "Defense"
     clearGUI()
@@ -561,6 +583,8 @@ def defenseScreen():
 #######################################################################################################################
 
 def shipyardScreen():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     currentView = "Shipyard"
     clearGUI()
@@ -617,6 +641,8 @@ def shipyardScreen():
 #######################################################################################################################
 
 def researchScreen():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     currentView = "Research"
     clearGUI()
@@ -677,6 +703,8 @@ def researchScreen():
 
 
 def constructionScreen():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     currentView = "Construction"
     clearGUI()
@@ -747,6 +775,8 @@ def changeResourceSettings():
 
 
 def resourceSettings():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     global metalRate, crystalRate, deuteriumRate, solarRate, fusionRate, satelliteRate
     currentView = "Resource Settings"
@@ -841,8 +871,16 @@ allButtons["View Defenses"].configure(command=defenseScreen)
 allButtons["View Galaxy"].configure(command=galaxyScreen)
 allButtons["Manage Fleets"].configure(command=fleetsScreen)
 
+def changePlanet(event, planet, player=currentPlayer):
+    global currentPlanet
+    currentPlanet = planet
+    global currentPlayer
+    currentPlayer = player
+
 
 def playerOverview():
+    global currentCommodity
+    currentCommodity = None
     global currentView
     currentView = "Overview"
     clearGUI()
@@ -853,7 +891,10 @@ def playerOverview():
     # allButtons["Left Arrow"].place(relx=0.3725, rely=0.625, relwidth=0.02, relheight=0.175)
     allLabels["Planet 1 Picture"].place(relx=0.4, rely=.625, relwidth=.095, relheight=.175)
     allLabels["Planet 1 Picture"].configure(image=allThumbnails["Default"])
-    # allLabels["Planet 2 Picture"].place(relx=0.5, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Planet 1 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Pig Farm"], DDB.playerList["Piggy"]))
+    allLabels["Planet 2 Picture"].place(relx=0.5, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Planet 2 Picture"].configure(image=allThumbnails["Default"])
+    allLabels["Planet 2 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"], DDB.playerList["Evil Squirrel"]))
     # allLabels["Planet 3 Picture"].place(relx=0.6, rely=.625, relwidth=.095, relheight=.175)
     # allLabels["Planet 4 Picture"].place(relx=0.7, rely=.625, relwidth=.095, relheight=.175)
     # allButtons["Right Arrow"].place(relx=0.8, rely=0.625, relwidth=0.02, relheight=0.175)
@@ -874,6 +915,7 @@ def newGame():
     global currentPlayer
     global currentPlanet
     DDB.newPlayer("Piggy", "Pig Farm")
+    DDB.newPlayer("Evil Squirrel", "Tree House")
     currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Pig Farm"]
     playerOverview()

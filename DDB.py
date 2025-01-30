@@ -29,12 +29,6 @@ uninhabited = [[i+1, j+1, k+1] for i in range(galaxies) for j in range(solarSyst
 fleetAcitivity = []
 
 
-# Keeps track of all buildings, research, ships, and defense building/deconstructing activity in the universe
-# [planet (instance), commodity (instance), increment (amount), end time (seconds A.E.), price,
-#   timeNeeded (seconds, optional)]
-# purchaseQueue = []
-
-
 # The function returns True if and only if the input planet has the tech required to purchase the input commodity.
 def verifyTechRequirements(planet, commodity):
     techNeeded = commodity.getTech()
@@ -74,9 +68,11 @@ def cashier(planet, commodity, amount=1):
                 planet.resources[0] -= price[0]
                 planet.resources[1] -= price[1]
                 planet.resources[2] -= price[2]
-                startTime = time.time() + len(planet.buildingQueue)
-                # timeNeeded = planet.getTime(commodity, currentLevel, universeSpeed)
-                # purchaseQueue.append([planet, commodity, 1, startTime, price, timeNeeded])
+                startTime = time.time()
+                if len(planet.buildingQueue) > 0:
+                    timeNeeded = planet.getTime(planet.buildingQueue[-1][0], planet.buildingQueue[-1][1], universeSpeed)
+                    startTime = planet.buildingQueue[-1][2] + timeNeeded
+
                 planet.buildingQueue.append([commodity, currentLevel + 1, startTime])
 
         elif type(commodity).__name__ == "Research":
@@ -87,63 +83,25 @@ def cashier(planet, commodity, amount=1):
                 planet.resources[2] -= price[2]
                 startTime = time.time()
                 currentLevel = planet.commodities[commodity.name]
-                # timeNeeded = planet.getTime(commodity, currentLevel, universeSpeed)
-                # endTime = startTime + timeNeeded
-                # purchaseQueue.append([planet, commodity, 1, startTime, price, timeNeeded])
                 playerList[planet.owner].researchQueue.append([commodity, currentLevel + 1, startTime])
 
         elif type(commodity).__name__ == "Ship" or type(commodity).__name__ == "Defense":
             price = commodity.getPrice(currentLevel)
-            planet.resources[0] -= price[0]
-            planet.resources[1] -= price[1]
-            planet.resources[2] -= price[2]
-            i = 1
+            i = 0
             # If the user accidentally inputs too large a number, this loop ensures they do not overspend.
-            while planet.resources[0] > 0 and planet.resources[1] > 0 and planet.resources[2] > 0:
+            while (planet.resources[0] - price[0] >= 0 and planet.resources[1] - price[1] >= 0
+                   and planet.resources[2] - price[1] >= 0):
                 if i == amount:
                     break
                 i += 1
                 planet.resources[0] -= price[0]
                 planet.resources[1] -= price[1]
                 planet.resources[2] -= price[2]
-            startTime = time.time() if len(planet.shipyardQueue) == 0 else max(time.time(), planet.shipyardQueue[-1][2])
-            # timeNeeded = planet.getTime(commodity, currentLevel, universeSpeed)
-            # endTime = startTime + timeNeeded
-            # purchaseQueue.append([planet, commodity, i, startTime, price, timeNeeded])
-            planet.shipyardQueue.append([commodity, i, startTime, startTime])
-
-
-# This function executes the purchases in purchaseQueue.
-# Archived
-# def updatePurchaseQueue():
-#     i = 0
-#     L = len(purchaseQueue)
-#     while i < L:
-#         item = purchaseQueue[i]
-#         if item[3] + item[5] < time.time():
-#             # Execute the purchase
-#             item[0].commodities[item[1].name] += 1
-#             planetList[item[0].name] = item[0]
-#             # Then update the queues
-#             if type(item[1]).__name__ == "Building":
-#                 planetList[item[0].name].buildingQueue.pop(0)
-#                 purchaseQueue.pop(i)
-#                 L -= 1
-#             elif type(item[1]).__name__ == "Research":
-#                 playerList[planetList[item[0].name].owner].researchQueue = []
-#                 purchaseQueue.pop(i)
-#                 L -= 1
-#             elif type(item[1]).__name__ == "Ship" or type(item[1]).__name__ == "Defense":
-#                 if purchaseQueue[i][2] > 1:
-#                     planetList[item[0].name].shipyardQueue[0][1] -= 1
-#                     purchaseQueue[i][2] -= 1
-#                     purchaseQueue[i][3] += purchaseQueue[i][5]
-#                 else:
-#                     planetList[item[0].name].shipyardQueue.pop(0)
-#                     purchaseQueue.pop(i)
-#                     L -= 1
-#             continue
-#         i += 1
+            startTime = time.time()
+            if len(planet.shipyardQueue) > 0:
+                timeNeeded = planet.getTime(planet.shipyardQueue[-1][0], None, universeSpeed)
+                startTime = planet.shipyardQueue[-1][2] + timeNeeded * planet.shipyardQueue[-1][1]
+            planet.shipyardQueue.append([commodity, i, startTime])
 
 
 def executePurchases():
@@ -167,24 +125,26 @@ def executePurchases():
             if item[2] + timeNeeded < time.time():
                 planet.commodities[item[0].name] += 1
                 planet.shipyardQueue[0][1] -= 1
-                planet.shipyardQueue[0][1] += timeNeeded
+                planet.shipyardQueue[0][2] += timeNeeded
                 if planet.shipyardQueue[0][1] == 0:
                     planet.shipyardQueue.pop(0)
 
 
 def cancelPurchase(planet, commodity):
     # This ensures only the last upgrade of the building is cancelled.
-    print(planet.buildingQueue)
     currentLevel = 0
     if len(planet.buildingQueue) > 0 and type(commodity).__name__ == "Building":
+        firstDeleted = False
         i = -1
         for item in planet.buildingQueue[::-1]:
             if item[0].name == commodity.name:
                 currentLevel = item[1]-1
-                planetList[planet.name].buildingQueue.pop(i)
+                planet.buildingQueue.pop(i)
+                firstDeleted = True
                 break
             i -= 1
-        print(planet.buildingQueue)
+        if len(planet.buildingQueue) > 0 and not firstDeleted:
+            planet.buildingQueue[0][2] = time.time()
     elif len(playerList[planet.owner].researchQueue) > 0 and type(commodity).__name__ == "Research":
         currentLevel = playerList[planet.owner].researchQueue[0][1]-1
         playerList[planet.owner].researchQueue.pop(0)
@@ -194,17 +154,6 @@ def cancelPurchase(planet, commodity):
     planetList[planet.name].resources[0] += price[0]
     planetList[planet.name].resources[1] += price[1]
     planetList[planet.name].resources[2] += price[2]
-
-    # L = len(purchaseQueue)
-    # i = L-1
-    # while i > -1:
-    #     if purchaseQueue[i][0] == planet and type(purchaseQueue[i][1]).__name__ == type(commodity).__name__:
-    #         planetList[planet.name].resources[0] += purchaseQueue[i][4][0]
-    #         planetList[planet.name].resources[1] += purchaseQueue[i][4][1]
-    #         planetList[planet.name].resources[2] += purchaseQueue[i][4][2]
-    #         purchaseQueue.pop(i)
-    #         return
-    #     i -= 1
 
 
 def updateResources():

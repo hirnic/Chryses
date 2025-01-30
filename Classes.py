@@ -10,8 +10,8 @@ technologyTree = {}
 class Player:
     def __init__(self, name, planets):
         self.name = name  # Name
-        self.planets = planets  # List of all planets owned by player
-        self.researchQueue = []  # List of all ongoing research
+        self.planets = planets  # List of all planets (instances) owned by player
+        self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
         self.fleets = []  # All fleet action owned by the player
         self.friends = []  # List of friends
         self.messages = []  # List of messages in player's inbox
@@ -51,6 +51,7 @@ class Planet:
                             "Research Laboratory": 0,
                             "Terraformer": 0,
                             "Missile Silo": 0,
+
                             "Espionage Technology": 0,
                             "Computer Technology": 0,
                             "Weapons Technology": 0,
@@ -67,6 +68,7 @@ class Planet:
                             "Intergalactic Research Network": 0,
                             "Astrophysics": 0,
                             "Graviton Technology": 0,
+
                             "Small Cargo": 0,
                             "Large Cargo": 0,
                             "Light Fighter": 0,
@@ -82,6 +84,7 @@ class Planet:
                             "Deathstar": 0,
                             "Battlecruiser": 0,
                             "Mega Cargo": 0,
+
                             "Rocket Launcher": 0,
                             "Light Laser": 0,
                             "Heavy Laser": 0,
@@ -291,15 +294,21 @@ class Ship(Defense):
 
 
 class Mission:
-    def __init__(self, owner, departure, arrival, fleet, occasion, cargo, speed, start):
-        self.owner = owner  # Owner of fleet
+    def __init__(self, owner, departure, destination, fleet, occasion, cargo, speed, start):
+        self.owner = owner  # Owner of fleet (player name)
         self.departure = departure  # Coordinates of planet where fleet starts
-        self.arrival = arrival  # Coordinates of planet where fleet is going
-        self.fleet = fleet  # List of numbers of ships
+        self.destination = destination  # Coordinates of planet where fleet is going
+        self.fleet = fleet  # See instance below
         self.occasion = occasion  # Explore, Transport, Attack, Return, etc.
         self.cargo = cargo  # Resources on ship
         self.speed = speed  # Relative speed of fleet
         self.start = start  # Start time of mission
+
+
+class Fleet:
+    def __init__(self, ownerPlanet, mission, ships):
+        self.ownerPlanet = ownerPlanet     # Planet instance
+        self.ships = ships                 # Dictionary {"Ship Name": number of ships, "Ship Name2": number of ships...}
 
 
 class Message:
