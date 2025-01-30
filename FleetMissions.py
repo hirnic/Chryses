@@ -41,7 +41,7 @@ def fleetSpeed(fleet):
 
 # This function determines how long a fleet will be in flight
 # fleet is an instance of a fleet
-# speed is the percentage (10%, 20%, ..., 100%) of the speed
+# speed is a float between 0 and 1
 def flightTime(departurePlanet, arrivalPlanet, fleet, speed):
     velocity = fleetSpeed(fleet)
     distance = flightDistance(departurePlanet, arrivalPlanet)

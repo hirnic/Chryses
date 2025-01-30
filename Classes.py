@@ -336,8 +336,7 @@ class EntryWithPlaceholder(tk.Entry):
 
         # Bind focus events
         self.bind("<FocusIn>", self.foc_in)
-        self.bind("<FocusOut>", self.foc_out)
-        self.bind("<Escape>", self.foc_out)
+        # self.bind("<FocusOut>", self.foc_out)
 
     def put_placeholder(self):
         self.delete(0, 'end')  # Clear any existing text
@@ -350,9 +349,9 @@ class EntryWithPlaceholder(tk.Entry):
             self.delete('0', 'end')  # Remove the placeholder
             self['fg'] = self.default_fg_color  # Set the text color back to normal
 
-    def foc_out(self, *args):
-        print("FocusOut triggered.")
-        self.put_placeholder()
+    # def foc_out(self, *args):
+    #     if len(input_value)
+    #     self.put_placeholder()
 
     def get(self):
         value = super().get()
@@ -367,12 +366,36 @@ class EntryWithPlaceholder(tk.Entry):
             return True
         return False
 
-# Zebulon = Planet("Zebulon", [1,1,1], 1, 126)
-#
-# Randy = Player("Randy", 1, [Zebulon])
-#
-# Brandy = Bot("Brandy", 1, [Zebulon], 1, 1, 1)
-#
-# print(Brandy.name)
-# print(Brandy.ID)
-# print(Brandy.planets[0].name)
+
+class PlaceholderEntry(tk.Entry):
+    def __init__(self, master=None, placeholder="Enter text", **kwargs):
+        super().__init__(master, **kwargs)
+        self.placeholder = placeholder
+        self.insert(0, self.placeholder)
+        self.config(fg="grey")
+
+        # Bind events to manage placeholder text
+        self.bind("<FocusIn>", self.remove_placeholder)
+        self.bind("<FocusOut>", self.add_placeholder)
+        self.bind("<KeyRelease>", self.check_for_empty_text)
+
+    def remove_placeholder(self, event=None):
+        if self.get() == self.placeholder:
+            self.delete(0, tk.END)
+            self.config(fg="black")
+
+    def add_placeholder(self, event=None):
+        if self.get() == "":
+            self.insert(0, self.placeholder)
+            self.config(fg="grey")
+
+    def check_for_empty_text(self, event=None):
+        if self.get() == "":
+            self.add_placeholder()
+
+    def specialGet(self):
+        value = super().get()
+        # If the value is the placeholder, return an empty string instead
+        if value == self.placeholder or value == "":
+            return "0"
+        return value

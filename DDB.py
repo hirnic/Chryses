@@ -11,6 +11,7 @@ galaxies = 3
 solarSystems = 5
 planets = 5
 universeSpeed = 100
+godMode = True
 
 
 # Keeps track of all players (and bots) in the game
@@ -32,6 +33,8 @@ fleetAcitivity = []
 # The function returns True if and only if the input planet has the tech required to purchase the input commodity.
 def verifyTechRequirements(planet, commodity):
     techNeeded = commodity.getTech()
+    if godMode:
+        return True
     for tech in techNeeded:
         if planet.commodities[tech] < techNeeded[tech]:
             return False
