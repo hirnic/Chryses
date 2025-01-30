@@ -191,6 +191,8 @@ allLabels = {
     "Shop Panel 14": tk.Label(root, bg="grey", text=" "),
     "Shop Panel 15": tk.Label(root, bg="grey", text=" "),
     "Shop Panel 16": tk.Label(root, bg="grey", text=" "),
+
+
 }
 
 metalRate = tk.StringVar(root)
@@ -205,6 +207,7 @@ fusionRate = tk.StringVar(root)
 fusionRate.set(str(currentPlanet.resourceSettings[4] * 100.0) + "%")
 satelliteRate = tk.StringVar(root)
 satelliteRate.set(str(currentPlanet.resourceSettings[5] * 100.0) + "%")
+missionType = tk.StringVar(mainFrame)
 
 allOptionMenus = {
     "Metal Menu": tk.OptionMenu(root, metalRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%",
@@ -218,7 +221,34 @@ allOptionMenus = {
     "Fusion Menu": tk.OptionMenu(root, fusionRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%",
                                  "10%", "0%"),
     "Satellite Menu": tk.OptionMenu(root, satelliteRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%",
-                                    "10%", "0%")}
+                                    "10%", "0%"),
+    "Mission Type": tk.OptionMenu(mainFrame, missionType, "Transport", "Deploy", "Recycle", "Colonize", "Epsionage", "Hold Position", "Attack")}
+
+
+allPEntries = {
+    "purchaseAmount": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Galaxy Destination": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Solar System Destination": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Planet Destination": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Metal Transport": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Crystal Transport": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Deuterium Transport": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
+    "Fleet Amount 1": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 2": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 3": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 4": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 5": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 6": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 7": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 8": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 9": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 10": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 11": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 12": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 13": Classes.EntryWithPlaceholder(root, "Enter a whole number."),
+    "Fleet Amount 14": Classes.EntryWithPlaceholder(root, "Enter a whole number.")
+}
+
 
 allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5, 3),
                  "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(12, 7),
@@ -226,7 +256,8 @@ allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5,
                  "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(10, 7),
                  "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7),
                  "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(11, 7),
-                 "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(12, 7)}
+                 "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(12, 7),
+                 "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(9,7)}
 
 allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(2, 2),
                     "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(3, 3),
@@ -234,7 +265,8 @@ allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample
                     "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(3, 3),
                     "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 3),
                     "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(3, 3),
-                    "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(3, 3)}
+                    "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(3, 3),
+                    "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(3,3)}
 
 # def resize_font(event=None):
 #     for button in allButtons.values():
@@ -260,9 +292,6 @@ allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample
 #         button.config(font=("Arial", min(a, b)))
 
 
-purchaseAmount = Classes.EntryWithPlaceholder(mainFrame, "Enter A Whole Number.")
-
-
 def clearGUI():
     for button in allButtons.values():
         button.place_forget()
@@ -272,7 +301,8 @@ def clearGUI():
         label.place_forget()
     for menu in allOptionMenus.values():
         menu.place_forget()
-    purchaseAmount.place_forget()
+    for entry in allPEntries.values():
+        entry.place_forget()
 
 
 def displayQueue():
@@ -384,17 +414,11 @@ def updateEverything():
     if currentView != "Resource Settings":
         displayQueue()
     # If a building, research, ship, or defense get completed, then this refreshes the page.
-    buildingQueueLength = len(currentPlanet.buildingQueue)
-    researchQueueLength = len(currentPlayer.researchQueue)
-    shipyardQueueLength = len(currentPlanet.shipyardQueue)
     DDB.executePurchases()
-    if len(currentPlanet.buildingQueue) != buildingQueueLength \
-            or len(currentPlayer.researchQueue) != researchQueueLength \
-            or len(currentPlanet.shipyardQueue) != shipyardQueueLength:
-        if currentCommodity is not None:
-            examineCommodity(None, currentCommodity)
-        else:
-            viewDictionary[currentView]()
+    if currentCommodity is not None:
+        examineCommodity(None, currentCommodity)
+    else:
+        viewDictionary[currentView]()
     DDB.updateResources()
 
     canvas.after(500, updateEverything)
@@ -431,14 +455,42 @@ def fleetsScreen():
     clearGUI()
     sideNav()
     topNav()
-    Freet = Classes.Fleet(currentPlanet, None, {"Small Cargo": 1, "Espionage Probe": 1})
-    # print(FleetMissions.flightDistance(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"]))
-    # print(FleetMissions.shipSpeed(currentPlanet, SDB.MasterShipsList["Espionage Probe"]))
-    # print(FleetMissions.shipSpeed(currentPlanet, SDB.MasterShipsList["Small Cargo"]))
-    # print(FleetMissions.fleetSpeed(currentPlanet, Freet))
-    # print(FleetMissions.flightTime(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"], Freet, 1))
-    # print(FleetMissions.fuelPerShip(DDB.planetList["Pig Farm"], DDB.planetList["Tree House"], SDB.MasterShipsList["Small Cargo"], 1))
-    print(FleetMissions.cargoSpace(Freet))
+
+    mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
+    # allLabels["Picture Frame"].place(relx=0.01, rely=0.01, relwidth=0.58, relheight=.88)
+
+    allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 2"].place(relx=0.35, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 3"].place(relx=0.45, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 4"].place(relx=0.55, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 5"].place(relx=0.65, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 6"].place(relx=0.75, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 7"].place(relx=0.85, rely=.625, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 8"].place(relx=0.25, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 9"].place(relx=0.35, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 10"].place(relx=0.45, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 11"].place(relx=0.55, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 12"].place(relx=0.65, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 13"].place(relx=0.75, rely=.81, relwidth=.095, relheight=.175)
+    allLabels["Shop Panel 14"].place(relx=0.85, rely=.81, relwidth=.095, relheight=.175)
+
+    allPEntries["Fleet Amount 1"].place(relx=0.255, rely = 0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 2"].place(relx=0.355, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 3"].place(relx=0.455, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 4"].place(relx=0.555, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 5"].place(relx=0.655, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 6"].place(relx=0.755, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 7"].place(relx=0.855, rely=0.76, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 8"].place(relx=0.255, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 9"].place(relx=0.355, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 10"].place(relx=0.455, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 11"].place(relx=0.555, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 12"].place(relx=0.655, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 13"].place(relx=0.755, rely=0.945, relwidth=0.085, relheight=0.03)
+    allPEntries["Fleet Amount 14"].place(relx=0.855, rely=0.945, relwidth=0.085, relheight=0.03)
+
+
+
     # Display defenses
     # Place all the buttons we can use
 
@@ -454,8 +506,8 @@ def purchaseCommodity(commodityName):
     if currentView == "Construction" or currentView == "Research":
         DDB.cashier(currentPlanet, SDB.MasterCommoditiesList[commodityName])
     elif currentView == "Shipyard" or currentView == "Defense":
-        DDB.cashier(currentPlanet, SDB.MasterCommoditiesList[commodityName], int(purchaseAmount.get()))
-        purchaseAmount.put_placeholder()
+        DDB.cashier(currentPlanet, SDB.MasterCommoditiesList[commodityName], int(allPEntries["purchaseAmount"].get()))
+        allPEntries["purchaseAmount"].put_placeholder()
     viewDictionary[currentView]()
     examineCommodity(root, commodityName)
 
@@ -509,7 +561,7 @@ def examineCommodity(event, commodityName):
                     allButtons["Purchase Button"].place_forget()
         else:
             allButtons["Purchase Button"].place_forget()
-            purchaseAmount.place_forget()
+            allPEntries["purchaseAmount"].place_forget()
     else:
         allButtons["Purchase Button"].place_forget()
 
@@ -531,7 +583,7 @@ def examineCommodity(event, commodityName):
     else:
         allLabels["Commodity Info Level"].configure(text="Amount Owned: " +
                                                          str(currentPlanet.commodities[commodityName]))
-        purchaseAmount.place(relx=0.61, rely=0.875, relwidth=0.13)
+        allPEntries["purchaseAmount"].place(relx=0.61, rely=0.875, relwidth=0.13)
     allButtons["Commodity Info Info"].place(relx=0.21, rely=0.9, relwidth=0.38, relheight=0.09)
     allButtons["Commodity Info Info"].configure(command=lambda: infoPage(commodityName))
     # resize_font()
@@ -749,7 +801,7 @@ def constructionScreen():
     allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Crystal Storage"))
     allLabels["Shop Panel 11"].configure(image=allThumbnails["Default"])
     allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Deuterium Tank"))
-    allLabels["Shop Panel 12"].configure(image=allThumbnails["Default"])
+    allLabels["Shop Panel 12"].configure(image=allThumbnails["Research Laboratory"])
     allLabels["Shop Panel 12"].bind("<Button-1>",
                                     lambda event: examineCommodity(event, "Research Laboratory"))
     allLabels["Shop Panel 13"].configure(image=allThumbnails["Default"])

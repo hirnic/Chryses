@@ -72,3 +72,12 @@ def cargoSpace(fleet):
 # This function makes the mission and sticks it into the database
 def scheduleMission(missionType, departurePlanet, arrivalPlanet, fleet, speed, cargo):
     pass
+    def __init__(self, owner, departure, destination, fleet, occasion, cargo, speed, start):
+        self.owner = owner  # Owner of fleet (player name)
+        self.departure = departure  # Coordinates of planet where fleet starts
+        self.destination = destination  # Coordinates of planet where fleet is going
+        self.fleet = fleet  # See instance below
+        self.occasion = occasion  # Explore, Transport, Attack, Return, etc.
+        self.cargo = cargo  # Resources on ship
+        self.speed = speed  # Relative speed of fleet
+        self.start = start  # Start time of mission
