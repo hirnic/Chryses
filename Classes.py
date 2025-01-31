@@ -294,15 +294,17 @@ class Ship(Defense):
 
 
 class Mission:
-    def __init__(self, owner, departure, destination, fleet, occasion, cargo, speed, start):
+    def __init__(self, owner, departure, destination, fleet, missionType, cargo, speed, start, arrivalTime, returnTime=None):
         self.owner = owner  # Owner of fleet (player name)
         self.departure = departure  # Coordinates of planet where fleet starts
         self.destination = destination  # Coordinates of planet where fleet is going
         self.fleet = fleet  # See instance below
-        self.occasion = occasion  # Explore, Transport, Attack, Return, etc.
+        self.missionType = missionType  # Explore, Transport, Attack, Return, etc.
         self.cargo = cargo  # Resources on ship
         self.speed = speed  # Relative speed of fleet
         self.start = start  # Start time of mission
+        self.arrivalTime = arrivalTime
+        self.returnTime = returnTime
 
 
 class Fleet:

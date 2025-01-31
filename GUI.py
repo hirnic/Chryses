@@ -224,10 +224,10 @@ allOptionMenus = {
                                  "10%", "0%"),
     "Satellite Menu": tk.OptionMenu(root, satelliteRate, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%",
                                     "10%", "0%"),
-    "Mission Type": tk.OptionMenu(mainFrame, missionType, "Transport", "Deploy", "Recycle", "Colonize", "Epsionage",
+    "Mission Type": tk.OptionMenu(mainFrame, missionType, "Select Mission","Transport", "Deploy", "Recycle", "Colonize", "Epsionage",
                                   "Hold Position", "Attack"),
     "Mission Speed": tk.OptionMenu(mainFrame, missionSpeed, "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%",
-                                   "20%", "10%", "0%")}
+                                   "20%", "10%")}
 
 allPEntries = {
     "purchaseAmount": Classes.EntryWithPlaceholder(mainFrame, "Enter a whole number."),
@@ -312,7 +312,12 @@ def formatTime(seconds):
         return time.strftime("%M m %S s", time.gmtime(seconds))
     if seconds < 86400:
         return time.strftime("%H h %M m %S s", time.gmtime(seconds))
-    return str(time.strftime("%j d %H h %M m %S s", time.gmtime(seconds)))
+    try:
+        return str(time.strftime("%j d %H h %M m %S s", time.gmtime(seconds)))
+    except OSError:
+        return "0"
+    except OverflowError:
+        return "0"
 
 
 def clearGUI():
@@ -430,6 +435,7 @@ def update_clock():
 
 
 def updateEverything():
+    # start = time.time()
     update_clock()
     allLabels["Metal Amount"].configure(text=str(int(currentPlanet.resources[0])))
     allLabels["Crystal Amount"].configure(text=str(int(currentPlanet.resources[1])))
@@ -444,8 +450,8 @@ def updateEverything():
     else:
         viewDictionary[currentView]()
     DDB.updateResources()
-
-    canvas.after(500, updateEverything)
+    # print(time.time()-start)
+    canvas.after(1000, updateEverything)
 
 
 #######################################################################################################################
@@ -509,31 +515,47 @@ def fleetsScreen():
                             "Destroyer": int(allPEntries["Fleet Amount 11"].get()),
                             "Deathstar": int(allPEntries["Fleet Amount 12"].get()),
                             "Battlecruiser": int(allPEntries["Fleet Amount 13"].get()),
-                            "Mega Cargo": int(allPEntries["Fleet Amount 14"].get())}
-                          )
-
-    arrivalPlanet = currentPlanet
-    for planet in DDB.planetList.values():
-        if planet.coords == [int(allPEntries["Galaxy Destination"].get()),
+                            "Mega Cargo": int(allPEntries["Fleet Amount 14"].get())})
+    arrivalPlanetCoords = [int(allPEntries["Galaxy Destination"].get()),
                              int(allPEntries["Solar System Destination"].get()),
-                             int(allPEntries["Planet Destination"].get())]:
-            arrivalPlanet = planet
-    speed = 1
-    if missionSpeed.get() == "Select Speed":
-        speed = 0
-    else:
-        speed = float(missionSpeed.get().strip("%")) / 100
+                             int(allPEntries["Planet Destination"].get())]
+    speed = 1 if missionSpeed.get() == "Select Speed" else float(missionSpeed.get().strip("%")) / 100
 
-    cargoCapacity = ((FleetMissions.cargoSpace(fleet) - int(allPEntries["Metal Transport"].get())
+
+    fuelRequired = FleetMissions.flightFuel(currentPlanet.coords, arrivalPlanetCoords, fleet, speed)
+    cargoCapacityRemaining = ((FleetMissions.cargoSpace(fleet) - int(allPEntries["Metal Transport"].get())
                      - int(allPEntries["Crystal Transport"].get())
-                     - int(allPEntries["Deuterium Transport"].get())))
+                     - int(allPEntries["Deuterium Transport"].get()))
+                     - fuelRequired)
+    flightTime = FleetMissions.flightTime(currentPlanet.coords, arrivalPlanetCoords, fleet, speed)
+    arrivalTime = time.strftime("%H:%M:%S", time.gmtime((time.time() + flightTime) % 86400))
+    returnTime =time.strftime("%H:%M:%S", time.gmtime((time.time() + 2*flightTime) % 86400))
 
     allLabels["Commodity Price 4"].configure(anchor="nw", justify="left", text="Mission Details\n"
-        + "\nFuel Required: " + str(FleetMissions.flightFuel(currentPlanet, arrivalPlanet, fleet, speed))
-        + "\nCargo Capacity: " + str(1)
-        + "\nArrival Time: " + str(1)
-        + "\nReturn Time: " + str(1)
-        + "\nFlight Time (one way): " + str(1))
+        + "\nFuel Required: " + str(fuelRequired)
+        + "\nCargo Capacity: " + str(cargoCapacityRemaining)
+        + "\nArrival Time: " + arrivalTime
+        + "\nReturn Time: " + returnTime
+        + "\nFlight Time (one way): " + formatTime(flightTime))
+
+    cargo = [int(allPEntries["Metal Transport"].get()),
+             int(allPEntries["Crystal Transport"].get()),
+             int(allPEntries["Deuterium Transport"].get())]
+    cargoCapacity = FleetMissions.cargoSpace(fleet) - fuelRequired
+
+    arrivalPlanet = currentPlanet
+    if FleetMissions.missionViability(currentPlanet, arrivalPlanetCoords, fleet, speed, cargo, cargoCapacity, missionType.get()):
+        # Consider passing this object into the missionViability check:
+        for planet in DDB.planetList.values():
+            if arrivalPlanetCoords == planet.coords:
+                arrivalPlanet = planet
+        allButtons["Purchase Button"].place(relx=0.61, rely=0.91, relwidth=0.38, relheight=0.08)
+        allButtons["Purchase Button"].configure(
+            text="Confirm Mission",
+            command=lambda: FleetMissions.scheduleMission(
+                currentPlanet, arrivalPlanet, fleet, missionType, speed, cargo, fuelRequired, arrivalTime, returnTime
+            )
+        )
 
     allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.095, relheight=.175)
     allLabels["Shop Panel 1"].unbind("<Button-1>")
@@ -565,7 +587,6 @@ def fleetsScreen():
     allLabels["Shop Panel 14"].unbind("<Button-1>")
 
     allPEntries["Fleet Amount 1"].place(relx=0.255, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 1"].placeholder = "Available: " + str(currentPlanet.commodities["Small Cargo"])
     allPEntries["Fleet Amount 2"].place(relx=0.355, rely=0.76, relwidth=0.085, relheight=0.03)
     allPEntries["Fleet Amount 3"].place(relx=0.455, rely=0.76, relwidth=0.085, relheight=0.03)
     allPEntries["Fleet Amount 4"].place(relx=0.555, rely=0.76, relwidth=0.085, relheight=0.03)
@@ -1071,6 +1092,7 @@ def newGame():
     currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Pig Farm"]
     playerOverview()
+    print(DDB.planetList["Tree House"].coords)
 
 
 viewDictionary = {"Overview": playerOverview,
