@@ -2,9 +2,7 @@
 
 import Classes
 import SDB
-from DDB import universeSpeed
-from DDB import planetList
-from DDB import playerList
+import DDB
 import math
 import time
 
@@ -48,7 +46,7 @@ def fleetSpeed(fleet):
 def flightTime(departurePlanetCoords, arrivalPlanetCoords, fleet, speed):
     velocity = fleetSpeed(fleet)
     distance = flightDistance(departurePlanetCoords, arrivalPlanetCoords)
-    flyTime = (10 + 35 / speed * math.sqrt(10 * distance / velocity)) / universeSpeed
+    flyTime = (10 + 35 / speed * math.sqrt(10 * distance / velocity)) / DDB.universeSpeed
     return flyTime
 
 # This function computes the amount of deuterium required by each ship.
@@ -103,7 +101,7 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
     # print("Check 4 passed")
 
     # 5. User has maximum number of missions currently ongoing (computer technology)
-    if len(playerList[departurePlanet.owner].fleets) == departurePlanet.commodities["Computer Technology"] + 1:
+    if len(DDB.playerList[departurePlanet.owner].fleets) == departurePlanet.commodities["Computer Technology"] + 1:
         return False
     # print("Check 5 passed")
 
@@ -114,7 +112,7 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
     # 6a. For transport, attack, hold position, espionage, the planet may not be inhabited.
     planetExists = False
     destination = arrivalPlanetCoords
-    for planet in planetList.values():
+    for planet in DDB.planetList.values():
         if arrivalPlanetCoords == planet.coords:
             planetExists = True
             destination = planet
@@ -128,10 +126,12 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
 
     # 6b. For colonize, the planet may be inhabited.
     if missionType == "Colonize":
-        for planet in planetList.values():
+        for planet in DDB.planetList.values():
             if arrivalPlanetCoords == planet.coords:
                 return False
         if fleet.ships["Colony Ship"] == 0:
+            return False
+        if len(DDB.playerList[departurePlanet.owner].planets) == 1 + math.ceil(departurePlanet.commodities["Astrophysics"]/2):
             return False
 
     # 6c. For recycling, the debris field may be empty.
@@ -149,17 +149,21 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
     return True
 
 # This function makes the mission and sticks it into the database
-def scheduleMission(departurePlanet, arrivalPlanet, fleet, missionType, speed, cargo, fuel, arrivalTime, returnTime):
-    Classes.Mission(playerList[departurePlanet.owner],
+def scheduleMission(departurePlanet, destination, fleet, missionType, speed, cargo, fuel, arrivalTime, returnTime):
+    mission = Classes.Mission(departurePlanet.owner,
                     departurePlanet,
-                    arrivalPlanet,
+                    destination,
                     fleet,
                     missionType,
                     cargo,
                     speed,
                     time.time(),
                     arrivalTime,
-                    returnTime)
+                    returnTime,
+                    fuel)
+
+    if missionType == "Deploy":
+        fuel = fuel/2
 
     # Subtract ships from planet
     for ship in fleet.ships:
@@ -173,3 +177,107 @@ def scheduleMission(departurePlanet, arrivalPlanet, fleet, missionType, speed, c
         departurePlanet.resources[i] -= cargo[i]
 
     # Send a message notifying defender
+    # Fill in code later. Not pressing.
+
+    # Add mission to database
+    DDB.fleetActivity[departurePlanet.name + str(arrivalTime)] = mission
+    DDB.playerList[departurePlanet.owner].fleets.append(mission)
+
+
+# This mission is created if the user cancels a mission or if a mission gets completed.
+def scheduleReturn(mission):
+    mission.returnTime = 2 * time.time() + mission.returnTime - 2 * mission.arrivalTime
+    mission.missionType = "Return"
+
+
+def executeReturn(mission):
+    if time.time() > mission.returnTime:
+        owner = DDB.playerList[mission.owner]
+        for ship in mission.fleet.ships:
+            DDB.planetList[mission.departurePlanet.name].commodities[ship] += mission.fleet.ships[ship]
+        for i in range(3):
+            mission.departurePlanet.resources[i] += mission.cargo[i]
+        del DDB.fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)]
+        for i in range(len(owner.fleets)):
+            if mission == owner.fleets[i]:
+                owner.fleets.pop(i)
+                break
+
+
+def transport(mission):
+    planetExists = False
+    arrivalPlanet = 0
+    for planet in DDB.planetList.values():
+        if planet.coords == mission.destination:
+            planetExists = True
+            arrivalPlanet = planet
+    if time.time() > mission.arrivalTime:
+        if planetExists:
+            for i in range(3):
+                DDB.planetList[arrivalPlanet.name].resources[i] += mission.cargo[i]
+                mission.cargo[i] = 0
+        scheduleReturn(mission)
+
+
+def deploy(mission):
+    planetExists = False
+    arrivalPlanet = 0
+    for planet in DDB.planetList.values():
+        if planet.coords == mission.destination:
+            planetExists = True
+            arrivalPlanet = planet
+    if time.time() > mission.arrivalTime:
+        owner = DDB.playerList[mission.owner]
+        if planetExists:
+            for ship in mission.fleet.ships:
+                arrivalPlanet.commodities[ship] += mission.fleet.ships[ship]
+            for i in range(3):
+                DDB.planetList[arrivalPlanet.name].resources[i] += mission.cargo[i]
+                mission.cargo[i] = 0
+            arrivalPlanet.resources[2] += mission.fuel/2
+            del DDB.fleetActivity[mission.departurePlanet.name+str(mission.arrivalTime)]
+            for i in range(len(owner.fleets)):
+                if mission == owner.fleets[i]:
+                    owner.fleets.pop(i)
+        else:
+            scheduleReturn(mission)
+
+
+def colonize(mission):
+    for planet in DDB.planetList.values():
+        if mission.destination == planet.coords:
+            scheduleReturn(mission)
+            return
+    if time.time() > mission.arrivalTime:
+        owner = DDB.playerList[mission.owner]
+        planetName ="Colony" + str(time.time())
+        DDB.createPlanet(planetName, mission.owner, mission.destination)
+        while DDB.planetList[planetName].owner != mission.owner:
+            planetName = planetName + "0"
+        for i in range(3):
+            DDB.planetList[planetName].resources[i] += mission.cargo[i]
+        for ship in mission.fleet.ships:
+            DDB.planetList[planetName].commodities[ship] += mission.fleet.ships[ship]
+        DDB.planetList[planetName].commodities["Colony Ship"] -= 1
+        DDB.planetList[planetName].resources[2] += mission.fuel/2
+        owner.planets.append(DDB.planetList[planetName])
+        del DDB.fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)]
+        for i in range(len(owner.fleets)):
+            if mission == owner.fleets[i]:
+                owner.fleets.pop(i)
+
+
+missionDictionary = {"Colonize": colonize,
+                     "Transport": transport,
+                     "Deploy": deploy,
+                     "Attack": scheduleReturn,
+                     "Recycle": scheduleReturn,
+                     "Espionage": scheduleReturn,
+                     "Hold Position": scheduleReturn,
+                     "Return": executeReturn}
+
+# Execute the missions!
+def executeMissions():
+    for mission in DDB.fleetActivity.copy().values():
+        if time.time() > mission.arrivalTime:
+            missionDictionary[mission.missionType](mission)

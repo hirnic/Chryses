@@ -15,8 +15,8 @@ import tkinter as tk
 import time
 from tkinter import font
 
-currentPlanet = Classes.Planet("Zebulon", [6, 6, 6], -1, [9999999, 9999999, 9999999, 9999999])
-currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
+currentPlanet = DDB.currentPlanet
+currentPlayer = DDB.currentPlayer
 currentView = "Overview"  # What is the player looking at?
 currentCommodity = None
 universeSpeed = DDB.universeSpeed
@@ -192,6 +192,18 @@ allLabels = {
     "Shop Panel 14": tk.Label(root, bg="grey", text=" "),
     "Shop Panel 15": tk.Label(root, bg="grey", text=" "),
     "Shop Panel 16": tk.Label(root, bg="grey", text=" "),
+
+    "Fleet Missions Title": tk.Label(mainFrame, text=" "),
+    "Fleet Mission 1": tk.Label(mainFrame, text=" "),
+    "Fleet Mission 2": tk.Label(mainFrame, text=" "),
+    "Fleet Mission 3": tk.Label(mainFrame, text=" "),
+    "Fleet Mission 4": tk.Label(mainFrame, text=" "),
+    "Fleet Mission 5": tk.Label(mainFrame, text=" "),
+    "Mission Cancel 1": tk.Label(mainFrame, text=" "),
+    "Mission Cancel 2": tk.Label(mainFrame, text=" "),
+    "Mission Cancel 3": tk.Label(mainFrame, text=" "),
+    "Mission Cancel 4": tk.Label(mainFrame, text=" "),
+    "Mission Cancel 5": tk.Label(mainFrame, text=" "),
 }
 
 metalRate = tk.StringVar(root)
@@ -258,18 +270,33 @@ allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5,
                  "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(7, 7),
                  "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(10, 7),
                  "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7),
+                 "Fusion Reactor": tk.PhotoImage(file="Fusion_Reactor2.png").subsample(7,7),
                  "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(11, 7),
+                 "Nanite Factory": tk.PhotoImage(file="Nanite_Factory1.png").subsample(7, 7),
                  "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(12, 7),
-                 "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(9, 7)}
+                 "Metal Storage": tk.PhotoImage(file="Metal_Storage1.png").subsample(7,7),
+                 "Crystal Storage": tk.PhotoImage(file="Crystal_Storage1.png").subsample(7,7),
+                 "Deuterium Tank": tk.PhotoImage(file="Deuterium_Tank1.png").subsample(7,7),
+                 "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(9, 7),
+                 "Terraformer": tk.PhotoImage(file="Terraformer1.png").subsample(7,7),
+                 "Missile Silo": tk.PhotoImage(file="Missile_Silo1.png").subsample(7,7)}
 
 allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(2, 2),
+                    "Planet Overview": tk.PhotoImage(file="Planets_Screen1.png").subsample(2,2),
                     "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(3, 3),
                     "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(2, 2),
                     "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(3, 3),
                     "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 2),
+                    "Fusion Reactor": tk.PhotoImage(file="Fusion_Reactor2.png").subsample(2,3),
                     "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(3, 3),
+                    "Nanite Factory": tk.PhotoImage(file="Nanite_Factory1.png").subsample(2,2),
                     "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(3, 3),
-                    "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(3, 3)}
+                    "Metal Storage": tk.PhotoImage(file="Metal_Storage1.png").subsample(2,2),
+                    "Crystal Storage": tk.PhotoImage(file="Crystal_Storage1.png").subsample(2,2),
+                    "Deuterium Tank": tk.PhotoImage(file="Deuterium_Tank1.png").subsample(2,2),
+                    "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(3, 3),
+                    "Terraformer": tk.PhotoImage(file="Terraformer1.png").subsample(2,2),
+                    "Missile Silo": tk.PhotoImage(file="Missile_Silo1.png").subsample(2,2)}
 
 
 # def resize_font(event=None):
@@ -303,7 +330,7 @@ def update_wraplength(event):
     allLabels["Buildings Queue"].configure(wraplength=allLabels["Buildings Queue"].winfo_width())
     allLabels["Research Queue"].configure(wraplength=allLabels["Research Queue"].winfo_width())
     allLabels["Shipyard Queue"].configure(wraplength=allLabels["Shipyard Queue"].winfo_width())
-
+    allLabels["Time Title"].configure(wraplength=allLabels["Time Title"].winfo_width())
 
 def formatTime(seconds):
     if seconds < 60:
@@ -318,6 +345,10 @@ def formatTime(seconds):
         return "0"
     except OverflowError:
         return "0"
+
+
+def formatDate(seconds):
+    return time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(seconds))
 
 
 def clearGUI():
@@ -407,8 +438,7 @@ def topNav():
     allLabels["Energy Amount"].place(relx=0.51, rely=0.51, relwidth=0.1517, relheight=.49)
     allLabels["Energy Amount"].configure(text=str(currentPlanet.resourceProductionRate()["Net Energy"]))
     allButtons["Resource Management"].place(relx=0.6767, rely=0.01, relwidth=0.1517, relheight=.98)
-    allLabels["Time Title"].place(relx=0.8383, rely=0.01, relwidth=0.1517, relheight=0.49)
-    allLabels["Time Amount"].place(relx=0.8383, rely=0.51, relwidth=0.1517, relheight=0.49)
+    allLabels["Time Title"].place(relx=0.8383, rely=0.01, relwidth=0.1517, relheight=0.98)
 
 
 def infoPage(commodityName):
@@ -430,9 +460,9 @@ def infoPage(commodityName):
 
 
 def update_clock():
-    current_time = time.strftime("%H:%M:%S")
-    allLabels["Time Amount"].config(text=current_time)
-
+    current_time = formatDate(time.time())
+    allLabels["Time Title"].config(text=current_time)
+    allLabels["Time Title"].bind("<Configure>", update_wraplength)
 
 def updateEverything():
     # start = time.time()
@@ -449,9 +479,10 @@ def updateEverything():
         examineCommodity(None, currentCommodity)
     else:
         viewDictionary[currentView]()
+    FleetMissions.executeMissions()
     DDB.updateResources()
     # print(time.time()-start)
-    canvas.after(1000, updateEverything)
+    canvas.after(100, updateEverything)
 
 
 #######################################################################################################################
@@ -475,6 +506,14 @@ def galaxyScreen():
 
 #######################################################################################################################
 
+
+def scheduleMission(departurePlanet, arrivalPlanet, fleet, mission, speed, cargo, fuelRequired, arrivalTime, returnTime):
+    FleetMissions.scheduleMission(departurePlanet, arrivalPlanet, fleet, mission, speed, cargo, fuelRequired, arrivalTime, returnTime)
+    for item in allPEntries.values():
+        item.put_placeholder()
+
+def cancelMission(event, mission):
+    pass
 
 def fleetsScreen():
     global currentCommodity
@@ -501,7 +540,22 @@ def fleetsScreen():
     allOptionMenus["Mission Speed"].place(relx=0.81, rely=0.46, relwidth=0.18, relheight=0.09)
     allLabels["Commodity Price 4"].place(relx=0.61, rely=0.56, relwidth=0.38, relheight=0.34)
 
-    fleet = Classes.Fleet(currentPlanet, missionType,
+    allLabels["Fleet Missions Title"].place(relx=0.11, rely=0.01, relwidth=0.39, relheight=0.15)
+    allLabels["Fleet Missions Title"].configure(text="Current Missions", font=("Courier New", 18))
+    for i in range(len(currentPlayer.fleets)):
+        allLabels["Fleet Mission " + str(i+1)].place(relx=0.05, rely=0.17 + 0.166*i, relwidth=0.55, relheight=0.15)
+        allLabels["Fleet Mission " + str(i+1)].configure(
+            text=currentPlayer.fleets[i].missionType
+            + "\nOrigin: " + currentPlayer.fleets[i].departurePlanet.name +", " + str(currentPlayer.fleets[i].departurePlanet.coords)
+            + ". Destination: " + str(currentPlayer.fleets[i].destination)
+            + "\nArrival: " + formatDate(currentPlayer.fleets[i].arrivalTime)
+            + ". Return: " + formatDate(currentPlayer.fleets[i].returnTime)
+        )
+        allLabels["Mission Cancel " + str(i+1)].place(relx=0.01, rely=0.17 + 0.166*i, relwidth=0.03, relheight=0.15)
+        allLabels["Mission Cancel " + str(i + 1)].configure(text="X")
+        allLabels["Mission Cancel " + str(i + 1)].bind("<Button-1>", lambda event, idx=currentPlayer.fleets[i]: cancelMission(event, idx))
+
+    fleet = Classes.Fleet(currentPlanet,
                           {"Small Cargo": int(allPEntries["Fleet Amount 1"].get()),
                             "Large Cargo": int(allPEntries["Fleet Amount 2"].get()),
                             "Light Fighter": int(allPEntries["Fleet Amount 3"].get()),
@@ -527,7 +581,7 @@ def fleetsScreen():
                      - int(allPEntries["Crystal Transport"].get())
                      - int(allPEntries["Deuterium Transport"].get()))
                      - fuelRequired)
-    flightTime = FleetMissions.flightTime(currentPlanet.coords, arrivalPlanetCoords, fleet, speed)
+    flightTime = max(1,FleetMissions.flightTime(currentPlanet.coords, arrivalPlanetCoords, fleet, speed))
     arrivalTime = time.strftime("%H:%M:%S", time.gmtime((time.time() + flightTime) % 86400))
     returnTime =time.strftime("%H:%M:%S", time.gmtime((time.time() + 2*flightTime) % 86400))
 
@@ -543,63 +597,27 @@ def fleetsScreen():
              int(allPEntries["Deuterium Transport"].get())]
     cargoCapacity = FleetMissions.cargoSpace(fleet) - fuelRequired
 
-    arrivalPlanet = currentPlanet
+    # arrivalPlanet = currentPlanet
     if FleetMissions.missionViability(currentPlanet, arrivalPlanetCoords, fleet, speed, cargo, cargoCapacity, missionType.get()):
         # Consider passing this object into the missionViability check:
-        for planet in DDB.planetList.values():
-            if arrivalPlanetCoords == planet.coords:
-                arrivalPlanet = planet
+        # for planet in DDB.planetList.values():
+        #     if arrivalPlanetCoords == planet.coords:
+        #         arrivalPlanet = planet
         allButtons["Purchase Button"].place(relx=0.61, rely=0.91, relwidth=0.38, relheight=0.08)
+        arrive = time.time() + flightTime
         allButtons["Purchase Button"].configure(
             text="Confirm Mission",
-            command=lambda: FleetMissions.scheduleMission(
-                currentPlanet, arrivalPlanet, fleet, missionType, speed, cargo, fuelRequired, arrivalTime, returnTime
+            command=lambda: scheduleMission(
+                currentPlanet, arrivalPlanetCoords, fleet, missionType.get(), speed, cargo, fuelRequired, arrive, arrive + flightTime
             )
         )
 
-    allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 1"].unbind("<Button-1>")
-    allLabels["Shop Panel 2"].place(relx=0.35, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 2"].unbind("<Button-1>")
-    allLabels["Shop Panel 3"].place(relx=0.45, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 3"].unbind("<Button-1>")
-    allLabels["Shop Panel 4"].place(relx=0.55, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 4"].unbind("<Button-1>")
-    allLabels["Shop Panel 5"].place(relx=0.65, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 5"].unbind("<Button-1>")
-    allLabels["Shop Panel 6"].place(relx=0.75, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 6"].unbind("<Button-1>")
-    allLabels["Shop Panel 7"].place(relx=0.85, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 7"].unbind("<Button-1>")
-    allLabels["Shop Panel 8"].place(relx=0.25, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 8"].unbind("<Button-1>")
-    allLabels["Shop Panel 9"].place(relx=0.35, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 9"].unbind("<Button-1>")
-    allLabels["Shop Panel 10"].place(relx=0.45, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 10"].unbind("<Button-1>")
-    allLabels["Shop Panel 11"].place(relx=0.55, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 11"].unbind("<Button-1>")
-    allLabels["Shop Panel 12"].place(relx=0.65, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 12"].unbind("<Button-1>")
-    allLabels["Shop Panel 13"].place(relx=0.75, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 13"].unbind("<Button-1>")
-    allLabels["Shop Panel 14"].place(relx=0.85, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 14"].unbind("<Button-1>")
+    for i in range(14):
+        allLabels["Shop Panel " + str(i+1)].place(relx=0.25+0.1*(i%7), rely=0.625+0.185*(i//7), relwidth=.095, relheight=.175)
+        allLabels["Shop Panel " + str(i+1)].unbind("<Button-1>")
+    for i in range(14):
+        allPEntries["Fleet Amount " + str(i+1)].place(relx=0.255+0.1 * (i%7), rely=0.76+0.185*(i//7), relwidth=0.085, relheight=0.03)
 
-    allPEntries["Fleet Amount 1"].place(relx=0.255, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 2"].place(relx=0.355, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 3"].place(relx=0.455, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 4"].place(relx=0.555, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 5"].place(relx=0.655, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 6"].place(relx=0.755, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 7"].place(relx=0.855, rely=0.76, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 8"].place(relx=0.255, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 9"].place(relx=0.355, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 10"].place(relx=0.455, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 11"].place(relx=0.555, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 12"].place(relx=0.655, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 13"].place(relx=0.755, rely=0.945, relwidth=0.085, relheight=0.03)
-    allPEntries["Fleet Amount 14"].place(relx=0.855, rely=0.945, relwidth=0.085, relheight=0.03)
 
     # Display defenses
     # Place all the buttons we can use
@@ -658,7 +676,6 @@ def examineCommodity(event, commodityName):
             if ((commodityName == "Robotics Factory" or commodityName == "Shipyard"
                  or commodityName == "Nanite Factory")
                     and len(currentPlanet.shipyardQueue) > 0):
-                print(currentPlanet.shipyardQueue)
                 allButtons["Purchase Button"].place_forget()
             if commodityName == "Research Laboratory" and len(currentPlayer.researchQueue) > 0:
                 allButtons["Purchase Button"].place_forget()
@@ -706,7 +723,8 @@ def examineCommodity(event, commodityName):
     update_wraplength(root)
     # resize_font()
 
-
+defenseList = ["Rocket Launcher", "Light Laser", "Heavy Laser", "Gauss Cannon", "Ion Cannon", "Plasma Turret",
+               "Small Shield Dome", "Large Shield Dome", "Antiballistic Missile", "Interplanetary Missile"]
 def defenseScreen():
     global currentCommodity
     currentCommodity = None
@@ -716,41 +734,27 @@ def defenseScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
-    allLabels["Shop Panel 1"].place(relx=0.275, rely=.625, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 2"].place(relx=0.405, rely=.625, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 3"].place(relx=0.535, rely=.625, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 4"].place(relx=0.665, rely=.625, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 5"].place(relx=0.795, rely=.625, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 6"].place(relx=0.275, rely=.81, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 7"].place(relx=0.405, rely=.81, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 8"].place(relx=0.535, rely=.81, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 9"].place(relx=0.665, rely=.81, relwidth=.11, relheight=.175)
-    allLabels["Shop Panel 10"].place(relx=0.795, rely=.81, relwidth=.11, relheight=.175)
-
-    allLabels["Shop Panel 1"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Rocket Launcher"))
-    allLabels["Shop Panel 2"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Light Laser"))
-    allLabels["Shop Panel 3"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Heavy Laser"))
-    allLabels["Shop Panel 4"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Gauss Cannon"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Ion Cannon"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Plasma Turret"))
-    allLabels["Shop Panel 7"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Small Shield Dome"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Large Shield Dome"))
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Antiballistic Missile"))
-    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Interplanetary Missile"))
-    # Display defenses
-    # Place all the buttons we can use
-
+    for i in range(10):
+        allLabels["Shop Panel " + str(i+1)].place(
+            relx=0.275 + 0.13*(i%5), rely=0.625 + 0.185*(i//5), relwidth=0.11, relheight=0.175)
+        try:
+            allLabels["Shop Panel " + str(i+1)].configure(image=allThumbnails[defenseList[i]])
+        except KeyError:
+            allLabels["Shop Panel " + str(i + 1)].configure(image=allThumbnails["Default"])
+        allLabels["Shop Panel " + str(i+1)].bind(
+            "<Button-1>", lambda event, idx=i: examineCommodity(event, defenseList[idx]))
+    for i in range(11, 17):
+        allLabels["Shop Panel " + str(i)].place_forget()
 
 #######################################################################################################################
 
 ### Button: View Shipyard
 
 #######################################################################################################################
+
+shipyardList = ["Small Cargo", "Large Cargo", "Light Fighter", "Heavy Fighter", "Cruiser", "Battleship", "Colony Ship",
+                "Recycler", "Espionage Probe", "Bomber", "Solar Satellite", "Destroyer", "Deathstar", "Battlecruiser",
+                "Mega Cargo"]
 
 def shipyardScreen():
     global currentCommodity
@@ -761,47 +765,16 @@ def shipyardScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
-    allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 2"].place(relx=0.3375, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 3"].place(relx=0.425, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 4"].place(relx=0.5125, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 5"].place(relx=0.6, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 6"].place(relx=0.6875, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 7"].place(relx=0.775, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 8"].place(relx=0.8625, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 9"].place(relx=0.25, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 10"].place(relx=0.3375, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 11"].place(relx=0.425, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 12"].place(relx=0.5125, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 13"].place(relx=0.6, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 14"].place(relx=0.6875, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 15"].place(relx=0.775, rely=.81, relwidth=.085, relheight=.175)
+    for i in range(15):
+        allLabels["Shop Panel " + str(i+1)].place(
+            relx=0.25 + 0.0875*(i%8), rely=0.625 + 0.185*(i//8), relwidth=0.085, relheight=0.175)
+        try:
+            allLabels["Shop Panel " + str(i+1)].configure(image=allThumbnails[shipyardList[i]])
+        except KeyError:
+            allLabels["Shop Panel " + str(i + 1)].configure(image=allThumbnails["Default"])
+        allLabels["Shop Panel " + str(i+1)].bind(
+            "<Button-1>", lambda event, idx=i: examineCommodity(event, shipyardList[idx]))
     allLabels["Shop Panel 16"].place_forget()
-
-    allLabels["Shop Panel 1"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Small Cargo"))
-    allLabels["Shop Panel 2"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Large Cargo"))
-    allLabels["Shop Panel 3"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Light Fighter"))
-    allLabels["Shop Panel 4"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Heavy Fighter"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Cruiser"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Battleship"))
-    allLabels["Shop Panel 7"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Colony Ship"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Recycler"))
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Espionage Probe"))
-    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Bomber"))
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Solar Satellite"))
-    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Destroyer"))
-    allLabels["Shop Panel 13"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Deathstar"))
-    allLabels["Shop Panel 14"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Battlecruiser"))
-    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Mega Cargo"))
-
-    # Place all the buttons we can use
 
 
 #######################################################################################################################
@@ -809,6 +782,11 @@ def shipyardScreen():
 ### Button: View Research
 
 #######################################################################################################################
+
+researchList = ["Espionage Technology", "Computer Technology", "Weapons Technology", "Shielding Technology",
+                "Armor Technology", "Energy Technology", "Hyperspace Technology", "Combustion Drive", "Impulse Drive",
+                "Hyperspace Drive", "Laser Technology", "Ion Technology", "Plasma Technology",
+                "Intergalactic Research Network", "Astrophysics", "Graviton Technology"]
 
 def researchScreen():
     global currentCommodity
@@ -819,50 +797,15 @@ def researchScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
-    allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 2"].place(relx=0.3375, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 3"].place(relx=0.425, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 4"].place(relx=0.5125, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 5"].place(relx=0.6, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 6"].place(relx=0.6875, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 7"].place(relx=0.775, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 8"].place(relx=0.8625, rely=.625, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 9"].place(relx=0.25, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 10"].place(relx=0.3375, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 11"].place(relx=0.425, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 12"].place(relx=0.5125, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 13"].place(relx=0.6, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 14"].place(relx=0.6875, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 15"].place(relx=0.775, rely=.81, relwidth=.085, relheight=.175)
-    allLabels["Shop Panel 16"].place(relx=0.8625, rely=.81, relwidth=.085, relheight=.175)
-
-    allLabels["Shop Panel 1"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Espionage Technology"))
-    allLabels["Shop Panel 2"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Computer Technology"))
-    allLabels["Shop Panel 3"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Weapons Technology"))
-    allLabels["Shop Panel 4"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Shielding Technology"))
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Armor Technology"))
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Energy Technology"))
-    allLabels["Shop Panel 7"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Hyperspace Technology"))
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Combustion Drive"))
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Impulse Drive"))
-    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Hyperspace Drive"))
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Laser Technology"))
-    allLabels["Shop Panel 12"].bind("<Button-1>", lambda event: examineCommodity(event, "Ion Technology"))
-    allLabels["Shop Panel 13"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Plasma Technology"))
-    allLabels["Shop Panel 14"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Intergalactic Research Network"))
-    allLabels["Shop Panel 15"].bind("<Button-1>", lambda event: examineCommodity(event, "Astrophysics"))
-    allLabels["Shop Panel 16"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Graviton Technology"))
-
-    # Display research
-    # Place all the buttons we can use
+    for i in range(16):
+        allLabels["Shop Panel " + str(i+1)].place(
+            relx=0.25 + 0.0875*(i%8), rely=0.625 + 0.185*(i//8), relwidth=0.085, relheight=0.175)
+        try:
+            allLabels["Shop Panel " + str(i+1)].configure(image=allThumbnails[researchList[i]])
+        except KeyError:
+            allLabels["Shop Panel " + str(i + 1)].configure(image=allThumbnails["Default"])
+        allLabels["Shop Panel " + str(i+1)].bind(
+            "<Button-1>", lambda event, idx=i: examineCommodity(event, researchList[idx]))
 
 
 #######################################################################################################################
@@ -871,7 +814,9 @@ def researchScreen():
 
 #######################################################################################################################
 
-
+buildingsList = ["Metal Mine", "Crystal Mine", "Deuterium Synthesizer", "Solar Plant", "Fusion Reactor",
+                 "Robotics Factory", "Nanite Factory", "Shipyard", "Metal Storage", "Crystal Storage", "Deuterium Tank",
+                 "Research Laboratory",  "Terraformer", "Missile Silo"]
 def constructionScreen():
     global currentCommodity
     currentCommodity = None
@@ -881,51 +826,14 @@ def constructionScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
-    allLabels["Shop Panel 1"].place(relx=0.25, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 2"].place(relx=0.35, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 3"].place(relx=0.45, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 4"].place(relx=0.55, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 5"].place(relx=0.65, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 6"].place(relx=0.75, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 7"].place(relx=0.85, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 8"].place(relx=0.25, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 9"].place(relx=0.35, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 10"].place(relx=0.45, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 11"].place(relx=0.55, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 12"].place(relx=0.65, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 13"].place(relx=0.75, rely=.81, relwidth=.095, relheight=.175)
-    allLabels["Shop Panel 14"].place(relx=0.85, rely=.81, relwidth=.095, relheight=.175)
-
-    allLabels["Shop Panel 1"].configure(image=allThumbnails["Metal Mine"])
-    allLabels["Shop Panel 1"].bind("<Button-1>", lambda event: examineCommodity(event, "Metal Mine"))
-    allLabels["Shop Panel 2"].configure(image=allThumbnails["Crystal Mine"])
-    allLabels["Shop Panel 2"].bind("<Button-1>", lambda event: examineCommodity(event, "Crystal Mine"))
-    allLabels["Shop Panel 3"].configure(image=allThumbnails["Deuterium Synthesizer"])
-    allLabels["Shop Panel 3"].bind("<Button-1>",
-                                   lambda event: examineCommodity(event, "Deuterium Synthesizer"))
-    allLabels["Shop Panel 4"].configure(image=allThumbnails["Solar Plant"])
-    allLabels["Shop Panel 4"].bind("<Button-1>", lambda event: examineCommodity(event, "Solar Plant"))
-    allLabels["Shop Panel 5"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 5"].bind("<Button-1>", lambda event: examineCommodity(event, "Fusion Reactor"))
-    allLabels["Shop Panel 6"].configure(image=allThumbnails["Robotics Factory"])
-    allLabels["Shop Panel 6"].bind("<Button-1>", lambda event: examineCommodity(event, "Robotics Factory"))
-    allLabels["Shop Panel 7"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 7"].bind("<Button-1>", lambda event: examineCommodity(event, "Nanite Factory"))
-    allLabels["Shop Panel 8"].configure(image=allThumbnails["Shipyard"])
-    allLabels["Shop Panel 8"].bind("<Button-1>", lambda event: examineCommodity(event, "Shipyard"))
-    allLabels["Shop Panel 9"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 9"].bind("<Button-1>", lambda event: examineCommodity(event, "Metal Storage"))
-    allLabels["Shop Panel 10"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 10"].bind("<Button-1>", lambda event: examineCommodity(event, "Crystal Storage"))
-    allLabels["Shop Panel 11"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 11"].bind("<Button-1>", lambda event: examineCommodity(event, "Deuterium Tank"))
-    allLabels["Shop Panel 12"].configure(image=allThumbnails["Research Laboratory"])
-    allLabels["Shop Panel 12"].bind("<Button-1>",
-                                    lambda event: examineCommodity(event, "Research Laboratory"))
-    allLabels["Shop Panel 13"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 13"].bind("<Button-1>", lambda event: examineCommodity(event, "Terraformer"))
-    allLabels["Shop Panel 14"].configure(image=allThumbnails["Default"])
-    allLabels["Shop Panel 14"].bind("<Button-1>", lambda event: examineCommodity(event, "Missile Silo"))
+    for i in range(14):
+        allLabels["Shop Panel " + str(i + 1)].place(
+            relx=0.25 + 0.1 * (i % 7), rely=0.625 + 0.185 * (i // 7), relwidth=.095, relheight=.175)
+        allLabels["Shop Panel " + str(i + 1)].configure(image=allThumbnails[buildingsList[i]])
+        allLabels["Shop Panel " + str(i + 1)].bind(
+            "<Button-1>", lambda event, idx=i: examineCommodity(event, buildingsList[idx]))
+    allLabels["Shop Panel 15"].place_forget()
+    allLabels["Shop Panel 16"].place_forget()
 
 
 #######################################################################################################################
@@ -1033,7 +941,6 @@ allLabels["Resource Settings Production Rate 11"].bind("<Button-1>", lambda even
 
 #######################################################################################################################
 
-
 allButtons["View Buildings"].configure(command=constructionScreen)
 allButtons["View ResearchLab"].configure(command=researchScreen)
 allButtons["View Shipyard"].configure(command=shipyardScreen)
@@ -1042,35 +949,45 @@ allButtons["View Galaxy"].configure(command=galaxyScreen)
 allButtons["Manage Fleets"].configure(command=fleetsScreen)
 
 
-def changePlanet(event, planet, player=currentPlayer):
+def changePlanet(event, planet):
     global currentPlanet
     currentPlanet = planet
-    global currentPlayer
-    currentPlayer = player
 
 
 def playerOverview():
-    global currentCommodity
+    global currentCommodity, currentView
     currentCommodity = None
-    global currentView
     currentView = "Overview"
     clearGUI()
     sideNav()
     topNav()
-    #
-    mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
-    # allButtons["Left Arrow"].place(relx=0.3725, rely=0.625, relwidth=0.02, relheight=0.175)
-    allLabels["Planet 1 Picture"].place(relx=0.4, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Planet 1 Picture"].configure(image=allThumbnails["Default"])
-    allLabels["Planet 1 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Pig Farm"],
-                                                                                DDB.playerList["Piggy"]))
-    allLabels["Planet 2 Picture"].place(relx=0.5, rely=.625, relwidth=.095, relheight=.175)
-    allLabels["Planet 2 Picture"].configure(image=allThumbnails["Default"])
-    allLabels["Planet 2 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"],
-                                                                                DDB.playerList["Evil Squirrel"]))
-    # allLabels["Planet 3 Picture"].place(relx=0.6, rely=.625, relwidth=.095, relheight=.175)
-    # allLabels["Planet 4 Picture"].place(relx=0.7, rely=.625, relwidth=.095, relheight=.175)
-    # allButtons["Right Arrow"].place(relx=0.8, rely=0.625, relwidth=0.02, relheight=0.175)
+    mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.69)
+    allLabels["Picture Frame"].place(relx=0.25, rely=0.01, relwidth=0.50, relheight=0.98)
+    allLabels["Picture Frame"].configure(image=allDisplayPhotos["Planet Overview"])
+    allLabels["Commodity Info Title"].place(relx=0.01, rely=0.01, relwidth=0.23, relheight=0.1)
+    allLabels["Commodity Info Title"].configure(text=currentPlanet.name, font=("Courier New", 18))
+    allLabels["Commodity Price 1"].place(relx=0.01, rely=0.12, relwidth=0.23, relheight=0.08)
+    allLabels["Commodity Price 1"].configure(
+        text="Coordinates: ("
+             + str(currentPlanet.coords[0])
+             + ":" + str(currentPlanet.coords[1])
+             + ":" + str(currentPlanet.coords[2])
+             + ")")
+    for i in range(4):
+        try:
+            allLabels["Planet " + str(i + 1) + " Picture"].bind(
+                "<Button-1>", lambda event, idx=currentPlayer.planets[i]: changePlanet(event, idx))
+        except IndexError:
+            break
+        allLabels["Planet " + str(i + 1) + " Picture"].place(relx=0.4 + 0.1 * i, rely=.8, relwidth=.095, relheight=.175)
+        allLabels["Planet " + str(i + 1) + " Picture"].configure(image=allThumbnails["Default"])
+    if len(currentPlayer.planets) > 4:
+        allButtons["Left Arrow"].place(relx=0.3725, rely=0.8, relwidth=0.02, relheight=0.175)
+        allButtons["Right Arrow"].place(relx=0.8, rely=0.8, relwidth=0.02, relheight=0.175)
+
+    allLabels["Planet 4 Picture"].place(relx=0.8, rely=.8, relwidth=.095, relheight=.175)
+    allLabels["Planet 4 Picture"].configure(image=allThumbnails["Default"])
+    allLabels["Planet 4 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"]))
 
 
 allButtons["Overview"].configure(command=playerOverview)
@@ -1089,11 +1006,13 @@ def newGame():
     global currentPlanet
     DDB.newPlayer("Piggy", "Pig Farm")
     DDB.newPlayer("Evil Squirrel", "Tree House")
+    DDB.currentPlayer = DDB.playerList["Piggy"]
     currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Pig Farm"]
     playerOverview()
-    print(DDB.planetList["Tree House"].coords)
-
+    # print("Pig Farm coordinates: ", DDB.planetList["Pig Farm"].coords)
+    # print("Tree House coordinates: ", DDB.planetList["Tree House"].coords)
+    updateEverything()
 
 viewDictionary = {"Overview": playerOverview,
                   "Construction": constructionScreen,
@@ -1110,6 +1029,13 @@ viewDictionary = {"Overview": playerOverview,
 
 #######################################################################################################################
 
+def loadGame():
+    DDB.loadGame()
+    global currentPlayer, currentPlanet
+    currentPlayer = DDB.currentPlayer
+    currentPlanet = currentPlayer.planets[0]
+    playerOverview()
+    updateEverything()
 
 #######################################################################################################################
 
@@ -1126,22 +1052,28 @@ viewDictionary = {"Overview": playerOverview,
 
 # This will be the entry point of the game
 
-# clearGUI()
-# allButtons['New Game Button'].configure(command=newGame)
-# allButtons['New Game Button'].place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.15)
-# allButtons['Load Game Button'].place(relx=0.2, rely=0.31667, relwidth=0.6, relheight=0.15)
+clearGUI()
+allButtons['New Game Button'].configure(command=newGame)
+allButtons['New Game Button'].place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.15)
+allButtons['Load Game Button'].place(relx=0.2, rely=0.31667, relwidth=0.6, relheight=0.15)
+allButtons['Load Game Button'].configure(command=loadGame)
 # allButtons['Options Button'].place(relx=0.2, rely=0.53333, relwidth=0.6, relheight=0.15)
 # allButtons['Quit Button'].configure(command = root.destroy)
 # allButtons['Quit Button'].place(relx=0.2, rely=0.75, relwidth=0.6, relheight=0.15)
-newGame()
-updateEverything()
+
 
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
 #######################################################################################################################
+
+def on_close():
+    DDB.saveGame()  # Save before closing
+    root.destroy()  # Close the Tkinter window
 
 # Bind the window resizing event to the update_font function
 # root.bind('<Configure>', resize_font)
+
+root.protocol("WM_DELETE_WINDOW", on_close)
 root.mainloop()

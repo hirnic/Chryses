@@ -4,40 +4,7 @@ import tkinter as tk
 
 # Oddly enough, we need this here for this to work correctly
 technologyTree = {}
-
-
-# Bots can be players too
-class Player:
-    def __init__(self, name, planets):
-        self.name = name  # Name
-        self.planets = planets  # List of all planets (instances) owned by player
-        self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
-        self.fleets = []  # All fleet action owned by the player
-        self.friends = []  # List of friends
-        self.messages = []  # List of messages in player's inbox
-        # self.faction = faction                                # What faction the player belongs to
-
-    def __repr__(self):
-        return f"{self.name}"
-
-
-# class Bot(Player):
-#     def __init__(self, name, ID, planets, faction, speed, size, aggro):
-#         Player.__init__(self, name, ID, planets, faction)
-#         self.speed = speed                                       #How quickly a bot moves from one goal to the next
-#         self.size = size                                         #How large the bot is allowed to grow
-#         self.aggro = aggro                                       #How aggressive the bot is
-#         self.Goals = []                                          #What is the bot focusing on next?
-
-
-class Planet:
-    def __init__(self, name, coords, ownerName, resources):
-        self.name = name  # Name of planet
-        self.coords = coords  # Location of planet
-        self.owner = ownerName  # Owner of planet (string)
-        self.resources = resources  # Resources on planet
-        self.resourceSettings = [1, 1, 1, 1, 1, 1]  # Metal, Crystal, Deuterium, Solar, Fusion, Satellite rates
-        self.commodities = {"Metal Mine": 0,
+emptyCommoditiesList = {"Metal Mine": 0,
                             "Crystal Mine": 0,
                             "Deuterium Synthesizer": 0,
                             "Solar Plant": 0,
@@ -94,15 +61,82 @@ class Planet:
                             "Small Shield Dome": 0,
                             "Large Shield Dome": 0,
                             "Antiballistic Missile": 0,
-                            "Interplanetary Missile": 0}  # List of buildings, research, ships, and defenses
-        self.buildingQueue = []  # [commodity, currentLevel + 1, endTime]
-        self.shipyardQueue = []  # List of all ships/defenses in production  (Max 15)
-        self.fleets = []  # All fleet action planet is involved in
-        self.debris = [0, 0, 0]  # Resources in debris field
+                            "Interplanetary Missile": 0}
+
+
+# Bots can be players too
+class Player:
+    def __init__(self, name, planets, researchQueue=[], fleets=[]):
+        self.name = name  # Name
+        self.planets = planets  # List of all planets (instances) owned by player
+        self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
+        for i in range(len(researchQueue)):
+            self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
+        self.fleets = fleets  # All fleet action owned by the player
+        # self.friends = []  # List of friends
+        # self.messages = []  # List of messages in player's inbox
+        # self.faction = faction                                # What faction the player belongs to
+
+    def __repr__(self):
+        return f"{self.name}"
+
+    def toDict(self):
+        return {
+            "name": self.name,
+            "planets": [planet.toDict() for planet in self.planets],
+            "researchQueue": [[item[0].toDict(), item[1], item[2]] for item in self.researchQueue],
+            "fleets": [mission.toDict() for mission in self.fleets],
+            # "friends": self.friends,
+            # "messages": self.messages,
+            # "factions": self.faction
+            }
+
+
+# class Bot(Player):
+#     def __init__(self, name, ID, planets, faction, speed, size, aggro):
+#         Player.__init__(self, name, ID, planets, faction)
+#         self.speed = speed                                       #How quickly a bot moves from one goal to the next
+#         self.size = size                                         #How large the bot is allowed to grow
+#         self.aggro = aggro                                       #How aggressive the bot is
+#         self.Goals = []                                          #What is the bot focusing on next?
+
+
+class Planet:
+    def __init__(self, name, coords, ownerName, resources, resourceSettings = [1,1,1,1,1,1],
+                 commodities=emptyCommoditiesList, buildingQueue=[], shipyardQueue=[], debris = [0, 0, 0]):
+        self.name = name  # Name of planet
+        self.coords = coords  # Location of planet
+        self.owner = ownerName  # Owner of planet (string)
+        self.resources = resources  # Resources on planet
+        self.resourceSettings = resourceSettings  # Metal, Crystal, Deuterium, Solar, Fusion, Satellite rates
+        self.commodities = commodities  # List of buildings, research, ships, and defenses
+        self.buildingQueue = [[Building(**buildingQueue[i][0]), buildingQueue[i][1], buildingQueue[i][2]] for i in range(len(buildingQueue))]
+            # [commodity (instance), currentLevel + 1, endTime] to initialize, pass the commodity as commodity.toDict()
+        self.shipyardQueue = []  # [commodity (instance), i, startTime] List of all ships/defenses in production  (Max 15)
+        for i in range(len(shipyardQueue)):
+            if len(shipyardQueue[i][0]) == 4:
+                self.shipyardQueue.append([Defense(shipyardQueue[i][0]), shipyardQueue[1], shipyardQueue[2]])
+            else:
+                self.shipyardQueue.append([Ship(shipyardQueue[i][0]), shipyardQueue[1], shipyardQueue[2]])
+        self.debris = debris   # Resources in debris field
         # Planet.moons = []      # Moons belonging to planet
 
     def __repr__(self):
         return f"{self.name}"
+
+    def toDict(self):
+        return {
+            "name": self.name,
+            "coords": self.coords,
+            "ownerName": self.owner,
+            "resources": self.resources,
+            "resourceSettings": self.resourceSettings,
+            "commodities": self.commodities,
+            "buildingQueue": [[item[0].toDict(), item[1], item[2]] for item in self.buildingQueue],
+            "shipyardQueue": [[item[0].toDict(), item[1], item[2]] for item in self.shipyardQueue],
+            "debris": self.debris,
+            # Planet.moons = []      # Moons belonging to planet
+        }
 
     def storage(self):
         capacityList = [10000, 20000, 40000, 75000, 140000, 255000]
@@ -145,6 +179,7 @@ class Planet:
                         2500 * (1 + self.commodities["Shipyard"]) * universeSpeed * (
                             2 ** self.commodities["Nanite Factory"]))
             return max(1, int(3600 * timeNeeded))
+
 
     def resourceProductionRate(self):
         metalEnergy = int(-1 * 22 * self.commodities["Metal Mine"] * 1.1 ** (self.commodities["Metal Mine"] - 1) *
@@ -216,6 +251,16 @@ class Building:
     def __repr__(self):
         return f"{self.name}"
 
+    def toDict(self):
+        return {
+            "name": self.name,
+            "baseCost": self.baseCost,
+            "upgradeMultipliers": self.upgradeMultipliers,
+            "baseTime": self.baseTime,
+            "baseProduction": self.baseProduction,
+            # "planetary": self.planetary
+        }
+
     def getTech(self):
         return technologyTree[self.name]
 
@@ -241,6 +286,13 @@ class Research:
 
     def __repr__(self):
         return f"{self.name}"
+
+    def toDict(self):
+        return {
+            "name": self.name,
+            "baseCost": self.baseCost,
+            "baseTime": self.baseTime
+        }
 
     def getTech(self):
         return technologyTree[self.name]
@@ -269,6 +321,14 @@ class Defense:
     def __repr__(self):
         return f"{self.name}"
 
+    def toDict(self):
+        return {
+            "name": self.name,
+            "baseCost": self.baseCost,
+            "baseShields": self.baseShields,
+            "baseDamage": self.baseDamage,
+        }
+
     def getTech(self):
         return technologyTree[self.name]
 
@@ -282,8 +342,7 @@ class Defense:
 
 
 class Ship(Defense):
-    def __init__(self, name, baseCost, baseDamage, baseShields, baseSpeed, baseCargo,
-                 baseFuel):
+    def __init__(self, name, baseCost, baseShields, baseDamage, baseSpeed, baseCargo, baseFuel):
         Defense.__init__(self, name, baseCost, baseDamage, baseShields)
         self.baseCargo = baseCargo  # Cargo storage of ship
         self.baseFuel = baseFuel  # Fuel consumption of ship
@@ -292,11 +351,22 @@ class Ship(Defense):
     def __repr__(self):
         return f"{self.name}"
 
+    def toDict(self):
+        return {
+            "name": self.name,
+            "baseCost": self.baseCost,
+            "baseShields": self.baseShields,
+            "baseDamage": self.baseDamage,
+            "baseSpeed": self.baseSpeed,
+            "baseCargo": self.baseCargo,
+            "baseFuel": self.baseFuel
+        }
+
 
 class Mission:
-    def __init__(self, owner, departure, destination, fleet, missionType, cargo, speed, start, arrivalTime, returnTime=None):
-        self.owner = owner  # Owner of fleet (player name)
-        self.departure = departure  # Coordinates of planet where fleet starts
+    def __init__(self, owner, departurePlanet, destination, fleet, missionType, cargo, speed, start, arrivalTime, returnTime=None, fuel=None):
+        self.owner = owner  # Owner of fleet (string)
+        self.departurePlanet = departurePlanet  # Planet where fleet starts
         self.destination = destination  # Coordinates of planet where fleet is going
         self.fleet = fleet  # See instance below
         self.missionType = missionType  # Explore, Transport, Attack, Return, etc.
@@ -305,20 +375,42 @@ class Mission:
         self.start = start  # Start time of mission
         self.arrivalTime = arrivalTime
         self.returnTime = returnTime
+        self.fuel = fuel
+
+    def toDict(self):
+        return{
+            "owner": self.owner,
+            "departurePlanet": self.departurePlanet.toDict(),
+            "destination": self.destination,
+            "fleet": self.fleet.toDict(),
+            "missionType": self.missionType,
+            "cargo": self.cargo,
+            "speed": self.speed,
+            "start": self.start,
+            "arrivalTime": self.arrivalTime,
+            "returnTime": self.returnTime,
+            "fuel": self.fuel,
+        }
 
 
 class Fleet:
-    def __init__(self, ownerPlanet, mission, ships):
+    def __init__(self, ownerPlanet, ships):
         self.ownerPlanet = ownerPlanet     # Planet instance
         self.ships = ships                 # Dictionary {"Ship Name": number of ships, "Ship Name2": number of ships...}
 
+    def toDict(self):
+        return {
+            "ownerPlanet": self.ownerPlanet.name,
+            "ships": self.ships
+        }
 
-class Message:
-    def __init__(self, sender, recipient, body, occasion):
-        self.sender = sender  # This is the player who sent the message
-        self.recipient = recipient  # This is the intended recipient of the message
-        self.body = body  # This is the text included in the message
-        self.occasion = occasion  # Construction, mission completion, battle report, etc...
+
+# class Message:
+#     def __init__(self, sender, recipient, body, occasion):
+#         self.sender = sender  # This is the player who sent the message
+#         self.recipient = recipient  # This is the intended recipient of the message
+#         self.body = body  # This is the text included in the message
+#         self.occasion = occasion  # Construction, mission completion, battle report, etc...
 
 
 class EntryWithPlaceholder(tk.Entry):

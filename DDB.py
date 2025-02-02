@@ -6,11 +6,14 @@ import Classes
 # import SDB
 import random
 import time
+import json
 
-galaxies = 3
-solarSystems = 5
-planets = 5
+galaxiesNo = 3
+solarSystemsNo = 5
+planetsNo = 5
 universeSpeed = 100
+currentPlanet = Classes.Planet("Zebulon", [6, 6, 6], "Pig Farmer", [9999999, 9999999, 9999999, 9999999])
+currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
 godMode = True
 
 
@@ -23,11 +26,56 @@ planetList = {}
 
 
 # Keeps track of all unoccupied planets in the universe
-uninhabited = [[i+1, j+1, k+1] for i in range(galaxies) for j in range(solarSystems) for k in range(planets)]
+uninhabited = [[i+1, j+1, k+1] for i in range(galaxiesNo) for j in range(solarSystemsNo) for k in range(planetsNo)]
 
 
-# Keeps track of all fleet activity in the universe
-fleetAcitivity = []
+# Keeps track of all fleet activity in the universe. The keys are
+# mission.departurePlanet.name + str(mission.arrivalTime)
+fleetActivity = {}
+
+def saveGame():
+    game_state = {
+        "players": {name: player.toDict() for name, player in playerList.items()},
+        "planets": {name: planet.toDict() for name, planet in planetList.items()},
+        "fleets": {name: fleet.toDict() for name, fleet in fleetActivity.items()},
+        "uninhabited": uninhabited,
+        "universe_speed": universeSpeed,
+        "current_player": currentPlayer.toDict()
+    }
+    with open("ogame_save.json", "w") as file:
+        json.dump(game_state, file, indent=4)
+
+def loadGame():
+    global playerList, planetList, fleetActivity, universeSpeed, currentPlayer, uninhabited
+    with open("ogame_save.json", "r") as file:
+        game_state = json.load(file)
+
+    # Recreate planets from the game state
+    planetList = {}
+    for name, planet_data in game_state["planets"].items():
+        planet = Classes.Planet(**planet_data)
+        planetList[name] = planet
+
+    fleetActivity = {}
+    for name, fleet_data in game_state["fleets"].items():
+        mission = Classes.Mission(**fleet_data)
+        mission.departurePlanet = planetList[mission.departurePlanet["name"]]
+        mission.fleet = Classes.Fleet(mission.departurePlanet, mission.fleet["ships"])
+        fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)] = mission
+
+    playerList = {}
+    for name, player_data in game_state["players"].items():
+        # Create a Player instance using the data from the saved game
+        player = Classes.Player(**player_data)
+        for i in range(len(player.planets)):
+            player.planets[i] = planetList[player.planets[i]["name"]]
+        for i in range(len(player.fleets)):
+            player.fleets[i] = fleetActivity[player.fleets[i]["departurePlanet"]["name"] + str(player.fleets[i]["arrivalTime"])]
+        playerList[name] = player
+
+    uninhabited = game_state["uninhabited"]
+    universeSpeed = game_state["universe_speed"]
+    currentPlayer = playerList[game_state["current_player"]["name"]]
 
 
 # The function returns True if and only if the input planet has the tech required to purchase the input commodity.
@@ -174,20 +222,31 @@ def updateResources():
         planet.resources[3] = production["Net Energy"]
 
 
-def createPlanet(planetName="Colony",  owner=None, coords=0):
+def createPlanet(suggestedName,  owner=None, coords=0):
+    planetName = suggestedName
+    while planetName in planetList.keys():
+        planetName = planetName + "0"
     planetCoordinates = coords
     if coords == 0:
         index = random.choice(range(len(uninhabited)))
         planetCoordinates = uninhabited[index]
         uninhabited.pop(index)
-    newPlanet = Classes.Planet(planetName, planetCoordinates, owner, [5000000, 3000000, 9999990, 0])
+    if godMode:
+        resources = [10000000000, 10000000000, 10000000000, 0]
+    else:
+        resources = [500, 300, 0, 0]
+    newPlanet = Classes.Planet(planetName, planetCoordinates, owner, resources)
+    if godMode:
+        newPlanet.commodities["Colony Ship"] = 10
+        newPlanet.commodities["Small Cargo"] = 10
+        newPlanet.commodities["Astrophysics"] = 10
     newPlanet.commodities["Research Laboratory"] = 12
     newPlanet.commodities["Shipyard"] = 12
     planetList[planetName] = newPlanet
     return newPlanet
 
 
-def newPlayer(playerName, planetName="Homeworld"):
+def newPlayer(playerName, planetName):
     # First we construct the new homeworld for the player
     homePlanet = createPlanet(planetName, owner=playerName)
     # Then we add the player to the dynamic database
