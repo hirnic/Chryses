@@ -264,13 +264,43 @@ def colonize(mission):
         del DDB.fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)]
         for i in range(len(owner.fleets)):
             if mission == owner.fleets[i]:
-                owner.fleets.pop(i)
+                DDB.playerList[owner.name].fleets.pop(i)
+
+
+defenseList = ["Small Cargo", "Large Cargo", "Light Fighter", "Heavy Fighter", "Cruiser", "Battleship", "Colony Ship",
+                "Recycler", "Espionage Probe", "Bomber", "Solar Satellite", "Destroyer", "Deathstar", "Battlecruiser",
+                "Mega Cargo", "Rocket Launcher", "Light Laser", "Heavy Laser", "Gauss Cannon", "Ion Cannon", "Plasma Turret",
+               "Small Shield Dome", "Large Shield Dome", "Antiballistic Missile", "Interplanetary Missile"]
+
+
+def attack(mission):
+    target = 0
+    for planet in DDB.planetList.values():
+        if mission.destination == planet.coords:
+            target = planet
+    hasDefense = False
+    for item in defenseList:
+        if target.commodities[item] > 0:
+            hasDefense = True
+            break
+    if not hasDefense:
+        cargoCapacity = cargoSpace(mission.fleet) - sum(mission.cargo)
+        totalResources = sum(target.resources)
+        if totalResources < cargoCapacity:
+            for i in range(3):
+                mission.cargo[i] += target.resources[i]
+                target.resources[i] = 0
+        else:
+            for i in range(3):
+                mission.cargo[i] += cargoCapacity * target.resources[i] / totalResources
+                target.resources[i] -= cargoCapacity * target.resources[i] / totalResources
+    scheduleReturn(mission)
 
 
 missionDictionary = {"Colonize": colonize,
                      "Transport": transport,
                      "Deploy": deploy,
-                     "Attack": scheduleReturn,
+                     "Attack": attack,
                      "Recycle": scheduleReturn,
                      "Espionage": scheduleReturn,
                      "Hold Position": scheduleReturn,

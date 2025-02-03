@@ -4,7 +4,53 @@ import tkinter as tk
 
 # Oddly enough, we need this here for this to work correctly
 technologyTree = {}
-emptyCommoditiesList = {"Metal Mine": 0,
+
+
+
+# Bots can be players too
+class Player:
+    def __init__(self, name, planets, researchQueue=[], fleets=[]):
+        self.name = name  # Name
+        self.planets = planets  # List of all planets (instances) owned by player
+        self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
+        for i in range(len(researchQueue)):
+            self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
+        self.fleets = fleets  # All fleet action owned by the player
+        # self.friends = []  # List of friends
+        # self.messages = []  # List of messages in player's inbox
+        # self.faction = faction                                # What faction the player belongs to
+
+    def __repr__(self):
+        return f"{self.name}"
+
+    def toDict(self):
+        return {
+            "name": self.name,
+            "planets": [planet.toDict() for planet in self.planets],
+            "researchQueue": [[item[0].toDict(), item[1], item[2]] for item in self.researchQueue],
+            "fleets": [mission.toDict() for mission in self.fleets],
+            # "friends": self.friends,
+            # "messages": self.messages,
+            # "factions": self.faction
+            }
+
+
+# class Bot(Player):
+#     def __init__(self, name, ID, planets, faction, speed, size, aggro):
+#         Player.__init__(self, name, ID, planets, faction)
+#         self.speed = speed                                       #How quickly a bot moves from one goal to the next
+#         self.size = size                                         #How large the bot is allowed to grow
+#         self.aggro = aggro                                       #How aggressive the bot is
+#         self.Goals = []                                          #What is the bot focusing on next?
+
+
+class Planet:
+    def __init__(self, name, coords, ownerName, resources, resourceSettings=None,
+                 commodities=None, buildingQueue=[], shipyardQueue=[], debris = None):
+        if resourceSettings is None:
+            resourceSettings = [1, 1, 1, 1, 1, 1]
+        if commodities is None:
+            commodities = {"Metal Mine": 0,
                             "Crystal Mine": 0,
                             "Deuterium Synthesizer": 0,
                             "Solar Plant": 0,
@@ -61,49 +107,10 @@ emptyCommoditiesList = {"Metal Mine": 0,
                             "Small Shield Dome": 0,
                             "Large Shield Dome": 0,
                             "Antiballistic Missile": 0,
-                            "Interplanetary Missile": 0}
+                            "Interplanetary Missile": 0}  # Make sure emptyCommoditiesList is defined elsewhere
+        if debris is None:
+            debris = [0, 0, 0]
 
-
-# Bots can be players too
-class Player:
-    def __init__(self, name, planets, researchQueue=[], fleets=[]):
-        self.name = name  # Name
-        self.planets = planets  # List of all planets (instances) owned by player
-        self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
-        for i in range(len(researchQueue)):
-            self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
-        self.fleets = fleets  # All fleet action owned by the player
-        # self.friends = []  # List of friends
-        # self.messages = []  # List of messages in player's inbox
-        # self.faction = faction                                # What faction the player belongs to
-
-    def __repr__(self):
-        return f"{self.name}"
-
-    def toDict(self):
-        return {
-            "name": self.name,
-            "planets": [planet.toDict() for planet in self.planets],
-            "researchQueue": [[item[0].toDict(), item[1], item[2]] for item in self.researchQueue],
-            "fleets": [mission.toDict() for mission in self.fleets],
-            # "friends": self.friends,
-            # "messages": self.messages,
-            # "factions": self.faction
-            }
-
-
-# class Bot(Player):
-#     def __init__(self, name, ID, planets, faction, speed, size, aggro):
-#         Player.__init__(self, name, ID, planets, faction)
-#         self.speed = speed                                       #How quickly a bot moves from one goal to the next
-#         self.size = size                                         #How large the bot is allowed to grow
-#         self.aggro = aggro                                       #How aggressive the bot is
-#         self.Goals = []                                          #What is the bot focusing on next?
-
-
-class Planet:
-    def __init__(self, name, coords, ownerName, resources, resourceSettings = [1,1,1,1,1,1],
-                 commodities=emptyCommoditiesList, buildingQueue=[], shipyardQueue=[], debris = [0, 0, 0]):
         self.name = name  # Name of planet
         self.coords = coords  # Location of planet
         self.owner = ownerName  # Owner of planet (string)
@@ -115,9 +122,9 @@ class Planet:
         self.shipyardQueue = []  # [commodity (instance), i, startTime] List of all ships/defenses in production  (Max 15)
         for i in range(len(shipyardQueue)):
             if len(shipyardQueue[i][0]) == 4:
-                self.shipyardQueue.append([Defense(shipyardQueue[i][0]), shipyardQueue[1], shipyardQueue[2]])
+                self.shipyardQueue.append([Defense(**shipyardQueue[i][0]), shipyardQueue[i][1], shipyardQueue[i][2]])
             else:
-                self.shipyardQueue.append([Ship(shipyardQueue[i][0]), shipyardQueue[1], shipyardQueue[2]])
+                self.shipyardQueue.append([Ship(**shipyardQueue[i][0]), shipyardQueue[i][1], shipyardQueue[i][2]])
         self.debris = debris   # Resources in debris field
         # Planet.moons = []      # Moons belonging to planet
 
@@ -414,10 +421,11 @@ class Fleet:
 
 
 class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master=None, placeholder="PLACEHOLDER", color='grey'):
+    def __init__(self, master=None, placeholder="PLACEHOLDER", default="0", color='grey'):
         super().__init__(master)
 
         self.placeholder = placeholder
+        self.defaultValue = default
         self.placeholder_color = color
         self.default_fg_color = self['fg']
 
@@ -451,7 +459,7 @@ class EntryWithPlaceholder(tk.Entry):
         value = super().get()
         # If the value is the placeholder, return an empty string instead
         if value == self.placeholder or value == "":
-            return "0"
+            return self.defaultValue
         return value
 
     def validate_input(self, input_value):

@@ -14,6 +14,9 @@ import DDB
 import tkinter as tk
 import time
 from tkinter import font
+from tkinter import ttk
+import os
+import sys
 
 currentPlanet = DDB.currentPlanet
 currentPlayer = DDB.currentPlayer
@@ -65,6 +68,12 @@ allButtons = {  # Main Menu Buttons
     # Constructions buttons
     "Purchase Button": tk.Button(mainFrame, text="Purchase"),
     "Commodity Info Info": tk.Button(mainFrame, text="Information"),
+
+    "Galaxy Left": tk.Button(root, text="<"),
+    "Galaxy Right": tk.Button(root, text=">"),
+    "System Left": tk.Button(root, text="<"),
+    "System Right": tk.Button(root, text=">"),
+    "Navigate": tk.Button(root, text="Navigate")
 
 }
 
@@ -204,6 +213,9 @@ allLabels = {
     "Mission Cancel 3": tk.Label(mainFrame, text=" "),
     "Mission Cancel 4": tk.Label(mainFrame, text=" "),
     "Mission Cancel 5": tk.Label(mainFrame, text=" "),
+
+    "Galaxy": tk.Label(root, text="Galaxy"),
+    "System": tk.Label(root, text="System"),
 }
 
 metalRate = tk.StringVar(root)
@@ -262,41 +274,52 @@ allPEntries = {
     "Fleet Amount 11": Classes.EntryWithPlaceholder(root, "Available: 0"),
     "Fleet Amount 12": Classes.EntryWithPlaceholder(root, "Available: 0"),
     "Fleet Amount 13": Classes.EntryWithPlaceholder(root, "Available: 0"),
-    "Fleet Amount 14": Classes.EntryWithPlaceholder(root, "Available: 0")
+    "Fleet Amount 14": Classes.EntryWithPlaceholder(root, "Available: 0"),
 }
 
-allThumbnails = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(5, 3),
-                 "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(12, 7),
-                 "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(7, 7),
-                 "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(10, 7),
-                 "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(6, 7),
-                 "Fusion Reactor": tk.PhotoImage(file="Fusion_Reactor2.png").subsample(7,7),
-                 "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(11, 7),
-                 "Nanite Factory": tk.PhotoImage(file="Nanite_Factory1.png").subsample(7, 7),
-                 "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(12, 7),
-                 "Metal Storage": tk.PhotoImage(file="Metal_Storage1.png").subsample(7,7),
-                 "Crystal Storage": tk.PhotoImage(file="Crystal_Storage1.png").subsample(7,7),
-                 "Deuterium Tank": tk.PhotoImage(file="Deuterium_Tank1.png").subsample(7,7),
-                 "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(9, 7),
-                 "Terraformer": tk.PhotoImage(file="Terraformer1.png").subsample(7,7),
-                 "Missile Silo": tk.PhotoImage(file="Missile_Silo1.png").subsample(7,7)}
+def resource_path(relative_path):
+    try:
+        # For bundled app, PyInstaller creates a temporary directory for resources
+        base_path = sys._MEIPASS
+    except Exception:
+        # If running in development environment
+        base_path = os.path.abspath(".")
 
-allDisplayPhotos = {"Default": tk.PhotoImage(file="Default_Image.png").subsample(2, 2),
-                    "Planet Overview": tk.PhotoImage(file="Planets_Screen1.png").subsample(2,2),
-                    "Metal Mine": tk.PhotoImage(file="Metal_Mine1.png").subsample(3, 3),
-                    "Crystal Mine": tk.PhotoImage(file="Crystal_Mine1.png").subsample(2, 2),
-                    "Deuterium Synthesizer": tk.PhotoImage(file="Deuterium_Synthesizer1.png").subsample(3, 3),
-                    "Solar Plant": tk.PhotoImage(file="Solar_Plant6.png").subsample(2, 2),
-                    "Fusion Reactor": tk.PhotoImage(file="Fusion_Reactor2.png").subsample(2,3),
-                    "Robotics Factory": tk.PhotoImage(file="Robotics_Factory1.png").subsample(3, 3),
-                    "Nanite Factory": tk.PhotoImage(file="Nanite_Factory1.png").subsample(2,2),
-                    "Shipyard": tk.PhotoImage(file="Shipyard1.png").subsample(3, 3),
-                    "Metal Storage": tk.PhotoImage(file="Metal_Storage1.png").subsample(2,2),
-                    "Crystal Storage": tk.PhotoImage(file="Crystal_Storage1.png").subsample(2,2),
-                    "Deuterium Tank": tk.PhotoImage(file="Deuterium_Tank1.png").subsample(2,2),
-                    "Research Laboratory": tk.PhotoImage(file="Research_Laboratory1.png").subsample(3, 3),
-                    "Terraformer": tk.PhotoImage(file="Terraformer1.png").subsample(2,2),
-                    "Missile Silo": tk.PhotoImage(file="Missile_Silo1.png").subsample(2,2)}
+    return os.path.join(base_path, relative_path)
+
+
+allThumbnails = {"Default": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(5, 3),
+                 "Metal Mine": tk.PhotoImage(file=resource_path("Photos/Metal_Mine1.png")).subsample(12, 7),
+                 "Crystal Mine": tk.PhotoImage(file=resource_path("Photos/Crystal_Mine1.png")).subsample(7, 7),
+                 "Deuterium Synthesizer": tk.PhotoImage(file=resource_path("Photos/Deuterium_Synthesizer1.png")).subsample(10, 7),
+                 "Solar Plant": tk.PhotoImage(file=resource_path("Photos/Solar_Plant6.png")).subsample(6, 7),
+                 "Fusion Reactor": tk.PhotoImage(file=resource_path("Photos/Fusion_Reactor2.png")).subsample(7,7),
+                 "Robotics Factory": tk.PhotoImage(file=resource_path("Photos/Robotics_Factory1.png")).subsample(11, 7),
+                 "Nanite Factory": tk.PhotoImage(file=resource_path("Photos/Nanite_Factory1.png")).subsample(7, 7),
+                 "Shipyard": tk.PhotoImage(file=resource_path("Photos/Shipyard1.png")).subsample(12, 7),
+                 "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Metal_Storage1.png")).subsample(7,7),
+                 "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Crystal_Storage1.png")).subsample(7,7),
+                 "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Deuterium_Tank1.png")).subsample(7,7),
+                 "Research Laboratory": tk.PhotoImage(file=resource_path("Photos/Research_Laboratory1.png")).subsample(9, 7),
+                 "Terraformer": tk.PhotoImage(file=resource_path("Photos/Terraformer1.png")).subsample(7,7),
+                 "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Missile_Silo1.png")).subsample(7,7)}
+
+allDisplayPhotos = {"Default": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
+                    "Planet Overview": tk.PhotoImage(file=resource_path("Photos/Planets_Screen1.png")).subsample(2,2),
+                    "Metal Mine": tk.PhotoImage(file=resource_path("Photos/Metal_Mine1.png")).subsample(3, 3),
+                    "Crystal Mine": tk.PhotoImage(file=resource_path("Photos/Crystal_Mine1.png")).subsample(2, 2),
+                    "Deuterium Synthesizer": tk.PhotoImage(file=resource_path("Photos/Deuterium_Synthesizer1.png")).subsample(3, 3),
+                    "Solar Plant": tk.PhotoImage(file=resource_path("Photos/Solar_Plant6.png")).subsample(2, 2),
+                    "Fusion Reactor": tk.PhotoImage(file=resource_path("Photos/Fusion_Reactor2.png")).subsample(2,3),
+                    "Robotics Factory": tk.PhotoImage(file=resource_path("Photos/Robotics_Factory1.png")).subsample(3, 3),
+                    "Nanite Factory": tk.PhotoImage(file=resource_path("Photos/Nanite_Factory1.png")).subsample(2,2),
+                    "Shipyard": tk.PhotoImage(file=resource_path("Photos/Shipyard1.png")).subsample(3, 3),
+                    "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Metal_Storage1.png")).subsample(2,2),
+                    "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Crystal_Storage1.png")).subsample(2,2),
+                    "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Deuterium_Tank1.png")).subsample(2,2),
+                    "Research Laboratory": tk.PhotoImage(file=resource_path("Photos/Research_Laboratory1.png")).subsample(3, 3),
+                    "Terraformer": tk.PhotoImage(file=resource_path("Photos/Terraformer1.png")).subsample(2,2),
+                    "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Missile_Silo1.png")).subsample(2,2)}
 
 
 # def resize_font(event=None):
@@ -350,6 +373,8 @@ def formatTime(seconds):
 def formatDate(seconds):
     return time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(seconds))
 
+# Create Treeview
+tree = ttk.Treeview(root, columns=("Index", "Planet Name", "Player Name"), show="headings")
 
 def clearGUI():
     for button in allButtons.values():
@@ -362,6 +387,7 @@ def clearGUI():
         menu.place_forget()
     for entry in allPEntries.values():
         entry.place_forget()
+    tree.place_forget()
 
 
 def displayQueue():
@@ -482,7 +508,7 @@ def updateEverything():
     FleetMissions.executeMissions()
     DDB.updateResources()
     # print(time.time()-start)
-    canvas.after(100, updateEverything)
+    canvas.after(DDB.updateNumber, updateEverything)
 
 
 #######################################################################################################################
@@ -491,13 +517,54 @@ def updateEverything():
 
 #######################################################################################################################
 
+# Define headings
+tree.heading("Index", text="Planet Number")
+tree.heading("Planet Name", text="Planet Name")
+tree.heading("Player Name", text="Player Name")
+treeRows = {"Row " + str(i+1): tree.insert("", "end", values=(" ", " ")) for i in range(10)}
+
+def navigate(galaxy, system):
+    G = str(min(9, max(1, int(allLabels["Galaxy"].cget("text")[-1]) + galaxy)))
+    S = str(min(9, max(1, int(allLabels["System"].cget("text")[-1]) + system)))
+    allLabels["Galaxy"].configure(text="Galaxy: " + str(G))
+    allLabels["System"].configure(text="System: " + str(S))
+
+
 def galaxyScreen():
-    global currentView
+    global currentView, treeRows
     currentView = "Galaxy"
     clearGUI()
     sideNav()
-    # Display defenses
-    # Place all the buttons we can use
+    topNav()
+    galaxy, system = int(allLabels["Galaxy"].cget("text")[-1]), int(allLabels["System"].cget("text")[-1])
+    planets = [item for item in DDB.planetList.values() if (item.coords[0] == galaxy and item.coords[1] == system)]
+
+    for i in range(10):
+        planetExists = False
+        for planet in planets:
+            if planet.coords[2] == i:
+                tree.item(treeRows["Row " + str(i + 1)], values=(str(i+1), "|   " + planet.name, "|   " + planet.owner))
+                planetExists = True
+                break
+        if not planetExists:
+            tree.item(treeRows["Row " + str(i + 1)], values=(str(i+1), "| ", "| "))
+
+    # Pack Treeview
+    tree.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.50)
+    ttk.Style().configure("Treeview", rowheight=36, borderwidth=1)
+    allButtons["Galaxy Left"].place(relx=0.25, rely=0.61, relwidth=0.05, relheight=0.1)
+    allButtons["Galaxy Left"].configure(command=lambda: navigate(-1, 0))
+    allLabels["Galaxy"].place(relx=0.31, rely=0.61, relwidth=0.08, relheight=0.1)
+    allButtons["Galaxy Right"].place(relx=0.40, rely=0.61, relwidth=0.05, relheight=0.1)
+    allButtons["Galaxy Right"].configure(command=lambda: navigate(1, 0))
+    allButtons["System Left"].place(relx=0.50, rely=0.61, relwidth=0.05, relheight=0.1)
+    allButtons["System Left"].configure(command=lambda: navigate(0,-1))
+    allLabels["System"].place(relx=0.56, rely=0.61, relwidth=0.08, relheight=0.1)
+    allButtons["System Right"].place(relx=0.65, rely=0.61, relwidth=0.05, relheight=0.1)
+    allButtons["System Right"].configure(command=lambda: navigate(0, 1))
+
+
+
 
 
 #######################################################################################################################
@@ -952,9 +1019,12 @@ allButtons["Manage Fleets"].configure(command=fleetsScreen)
 def changePlanet(event, planet):
     global currentPlanet
     currentPlanet = planet
+    allLabels["Galaxy"].configure(text="Galaxy: " + str(currentPlanet.coords[0]))
+    allLabels["System"].configure(text="System: " + str(currentPlanet.coords[1]))
 
 
 def playerOverview():
+
     global currentCommodity, currentView
     currentCommodity = None
     currentView = "Overview"
@@ -989,6 +1059,9 @@ def playerOverview():
     allLabels["Planet 4 Picture"].configure(image=allThumbnails["Default"])
     allLabels["Planet 4 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"]))
 
+    allLabels["Galaxy"].configure(text="Galaxy: " + str(currentPlanet.coords[0]))
+    allLabels["System"].configure(text="System: " + str(currentPlanet.coords[1]))
+
 
 allButtons["Overview"].configure(command=playerOverview)
 allLabels["Resource Settings Source 0"].bind("<Button-1>", lambda event: playerOverview())
@@ -1009,9 +1082,9 @@ def newGame():
     DDB.currentPlayer = DDB.playerList["Piggy"]
     currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Pig Farm"]
+    for i in range(50):
+        DDB.newPlayer("Bot " + str(i), "Planet " + str((2^i)%53))
     playerOverview()
-    # print("Pig Farm coordinates: ", DDB.planetList["Pig Farm"].coords)
-    # print("Tree House coordinates: ", DDB.planetList["Tree House"].coords)
     updateEverything()
 
 viewDictionary = {"Overview": playerOverview,

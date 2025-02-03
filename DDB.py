@@ -5,16 +5,19 @@
 import Classes
 # import SDB
 import random
+import os
+import sys
 import time
 import json
 
-galaxiesNo = 3
-solarSystemsNo = 5
-planetsNo = 5
-universeSpeed = 100
-currentPlanet = Classes.Planet("Zebulon", [6, 6, 6], "Pig Farmer", [9999999, 9999999, 9999999, 9999999])
+galaxiesNo = 9
+solarSystemsNo = 9
+planetsNo = 10
+universeSpeed = 1
+updateNumber = 100  # Once every 100 milliseconds
+godMode = False
+currentPlanet = Classes.Planet("Load Failed", [6, 6, 6], "Pig Farmer", [9999999, 9999999, 9999999, 9999999])
 currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
-godMode = True
 
 
 # Keeps track of all players (and bots) in the game
@@ -33,21 +36,44 @@ uninhabited = [[i+1, j+1, k+1] for i in range(galaxiesNo) for j in range(solarSy
 # mission.departurePlanet.name + str(mission.arrivalTime)
 fleetActivity = {}
 
+def get_save_path(filename):
+    # Check if we're running as a bundled executable
+    if getattr(sys, 'frozen', False):  # This checks if we are in a PyInstaller bundle
+        base_path = sys._MEIPASS  # noinspection PyUnresolvedReferences
+    else:
+        base_path = os.path.abspath(".")
+
+    # Ensure the save directory exists
+    save_dir = os.path.join(base_path, 'save_data')
+    os.makedirs(save_dir, exist_ok=True)  # Create directory if it doesn't exist
+
+    return os.path.join(save_dir, filename)
+
 def saveGame():
+    for player in playerList.values():
+        player.fleets=[fleet for fleet in player.fleets if fleet in fleetActivity.values()]  # THIS FIXES A BUG I CANNOT FIND THE SOURCE OF. DO NOT REMOVE!
     game_state = {
         "players": {name: player.toDict() for name, player in playerList.items()},
         "planets": {name: planet.toDict() for name, planet in planetList.items()},
         "fleets": {name: fleet.toDict() for name, fleet in fleetActivity.items()},
         "uninhabited": uninhabited,
         "universe_speed": universeSpeed,
-        "current_player": currentPlayer.toDict()
+        "current_player": currentPlayer.toDict(),
+        "last_played": time.time()
     }
-    with open("ogame_save.json", "w") as file:
+    save_path = get_save_path("zogame_save.json")  # Get correct path
+    with open(save_path, "w") as file:
         json.dump(game_state, file, indent=4)
+    print(f"Game saved to {save_path}")
 
 def loadGame():
-    global playerList, planetList, fleetActivity, universeSpeed, currentPlayer, uninhabited
-    with open("ogame_save.json", "r") as file:
+    global playerList, planetList, fleetActivity, universeSpeed, currentPlayer, uninhabited, updateNumber
+    save_path = get_save_path("zogame_save.json")  # Get correct path
+    if not os.path.exists(save_path):
+        print("No save file found.")
+        return
+
+    with open(save_path, "r") as file:
         game_state = json.load(file)
 
     # Recreate planets from the game state
@@ -70,12 +96,20 @@ def loadGame():
         for i in range(len(player.planets)):
             player.planets[i] = planetList[player.planets[i]["name"]]
         for i in range(len(player.fleets)):
+            print("Available Fleet Keys:", fleetActivity.keys())
+            print("Trying to access:",
+                  player.fleets[i]["departurePlanet"]["name"] + str(player.fleets[i]["arrivalTime"]))
             player.fleets[i] = fleetActivity[player.fleets[i]["departurePlanet"]["name"] + str(player.fleets[i]["arrivalTime"])]
+
         playerList[name] = player
 
     uninhabited = game_state["uninhabited"]
     universeSpeed = game_state["universe_speed"]
     currentPlayer = playerList[game_state["current_player"]["name"]]
+
+    # Here is where we update the resources accumulated while offline. This must change when factoring in attacks.
+    Now = time.time()
+    updateResources((Now - game_state["last_played"])*1000)
 
 
 # The function returns True if and only if the input planet has the tech required to purchase the input commodity.
@@ -93,6 +127,10 @@ def verifyTechRequirements(planet, commodity):
 def verifyResourceRequirements(planet, commodity):
     resourcesAvailable = planet.resources
     price = planet.getPrice(commodity, planet.commodities[commodity.name])
+    if type(commodity).__name__ == "Building":
+        for i in range(len(planet.buildingQueue)-1, -1, -1):
+            if planet.buildingQueue[i][0] == commodity:
+                price = planet.getPrice(commodity, planet.buildingQueue[i][1]+1)
     for i in range(3):
         if resourcesAvailable[i] < price[i]:
             return False
@@ -177,7 +215,7 @@ def executePurchases():
                 planet.commodities[item[0].name] += 1
                 planet.shipyardQueue[0][1] -= 1
                 planet.shipyardQueue[0][2] += timeNeeded
-                if planet.shipyardQueue[0][1] == 0:
+                if planet.shipyardQueue[0][1] <= 0:
                     planet.shipyardQueue.pop(0)
 
 
@@ -207,18 +245,18 @@ def cancelPurchase(planet, commodity):
     planetList[planet.name].resources[2] += price[2]
 
 
-def updateResources():
+def updateResources(size=updateNumber):
     for planet in planetList.values():
         production = planet.resourceProductionRate()
         planet.resources[0] = max(planet.resources[0],
                                   min(planet.storage()[0],
-                                      planet.resources[0] + universeSpeed*(100+production["Metal Rate"])/3600))
+                                      planet.resources[0] + size/1000*universeSpeed*(100+production["Metal Rate"])/3600))
         planet.resources[1] = max(planet.resources[1],
                                   min(planet.storage()[1],
-                                      planet.resources[1] + universeSpeed*(30+production["Crystal Rate"])/3600))
+                                      planet.resources[1] + size/1000*universeSpeed*(30+production["Crystal Rate"])/3600))
         planet.resources[2] = max(planet.resources[2],
                                   min(planet.storage()[2],
-                                      max(0, planet.resources[2] + universeSpeed*production["Net Deuterium"]/3600)))
+                                      max(0, planet.resources[2] + size/1000*universeSpeed*production["Net Deuterium"]/3600)))
         planet.resources[3] = production["Net Energy"]
 
 
@@ -240,8 +278,8 @@ def createPlanet(suggestedName,  owner=None, coords=0):
         newPlanet.commodities["Colony Ship"] = 10
         newPlanet.commodities["Small Cargo"] = 10
         newPlanet.commodities["Astrophysics"] = 10
-    newPlanet.commodities["Research Laboratory"] = 12
-    newPlanet.commodities["Shipyard"] = 12
+        newPlanet.commodities["Research Laboratory"] = 12
+        newPlanet.commodities["Shipyard"] = 12
     planetList[planetName] = newPlanet
     return newPlanet
 
