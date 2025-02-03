@@ -5,6 +5,8 @@ import SDB
 import DDB
 import math
 import time
+import random
+
 
 # This function computes the "distance" from one planet to another. Inputs are instances of planets (not just names).
 def flightDistance(departurePlanetCoords, arrivalPlanetCoords):
@@ -14,6 +16,7 @@ def flightDistance(departurePlanetCoords, arrivalPlanetCoords):
         return 2700 + 95 * abs(departurePlanetCoords[1] - arrivalPlanetCoords[1])
     else:
         return 1000 + 5 * abs(departurePlanetCoords[2] - arrivalPlanetCoords[2])
+
 
 # This function finds the speed of a single ship
 # planet = departure planet (instance)
@@ -31,6 +34,7 @@ def shipSpeed(ownerPlanet, ship):
         speed = ship.baseSpeed * (1 + 3 * driveLevel / 10)
     return speed
 
+
 # This finds the speed of the fleet, that is the speed of the slowest ship in the fleet
 # fleet is an instance of a fleet
 def fleetSpeed(fleet):
@@ -39,6 +43,7 @@ def fleetSpeed(fleet):
         if fleet.ships[ship] > 0:
             speed = min(speed, shipSpeed(fleet.ownerPlanet, SDB.MasterShipsList[ship]))
     return speed
+
 
 # This function determines how long a fleet will be in flight
 # fleet is an instance of a fleet
@@ -49,6 +54,7 @@ def flightTime(departurePlanetCoords, arrivalPlanetCoords, fleet, speed):
     flyTime = (10 + 35 / speed * math.sqrt(10 * distance / velocity)) / DDB.universeSpeed
     return flyTime
 
+
 # This function computes the amount of deuterium required by each ship.
 # ship is an instance of a ship
 def fuelPerShip(departurePlanetCoords, arrivalPlanetCoords, ship, speed):
@@ -56,12 +62,15 @@ def fuelPerShip(departurePlanetCoords, arrivalPlanetCoords, ship, speed):
     fuelNeeded = 1 + round((ship.baseFuel * distance * (1 + speed) ** 2) / 35000)
     return fuelNeeded
 
+
 # This function computes the amount of deuterium required by the entire fleet.
 def flightFuel(departurePlanetCoords, arrivalPlanetCoords, fleet, speed):
     fuelNeeded = 0
     for ship in fleet.ships:
-        fuelNeeded += fleet.ships[ship] * fuelPerShip(departurePlanetCoords, arrivalPlanetCoords, SDB.MasterShipsList[ship], speed)
+        fuelNeeded += fleet.ships[ship] * fuelPerShip(departurePlanetCoords, arrivalPlanetCoords,
+                                                      SDB.MasterShipsList[ship], speed)
     return fuelNeeded
+
 
 # This function computes the amount of cargo space the fleet has.
 def cargoSpace(fleet):
@@ -69,6 +78,7 @@ def cargoSpace(fleet):
     for ship in fleet.ships:
         cargo += fleet.ships[ship] * SDB.MasterShipsList[ship].baseCargo
     return cargo
+
 
 # This function goes through and checks all the reasons a mission might not be allowed to proceed.
 def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, cargoCapacity, missionType):
@@ -123,7 +133,6 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
         if not planetExists:
             return False
 
-
     # 6b. For colonize, the planet may be inhabited.
     if missionType == "Colonize":
         for planet in DDB.planetList.values():
@@ -131,7 +140,8 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
                 return False
         if fleet.ships["Colony Ship"] == 0:
             return False
-        if len(DDB.playerList[departurePlanet.owner].planets) == 1 + math.ceil(departurePlanet.commodities["Astrophysics"]/2):
+        if len(DDB.playerList[departurePlanet.owner].planets) == 1 + math.ceil(
+                departurePlanet.commodities["Astrophysics"] / 2):
             return False
 
     # 6c. For recycling, the debris field may be empty.
@@ -146,24 +156,35 @@ def missionViability(departurePlanet, arrivalPlanetCoords, fleet, speed, cargo, 
         if departurePlanet.owner != destination.owner:
             return False
 
+    # 6e. For espionage, the fleet must consist entirely of espionage probes
+    if missionType == "Espionage":
+        if fleet.ships["Espionage Probe"] <= 0:
+            return False
+        for ship in fleet.ships:
+            if ship == "Espionage Probe":
+                continue
+            elif fleet.ships[ship] > 0:
+                return False
+    # print("Check 6 passed!")
     return True
+
 
 # This function makes the mission and sticks it into the database
 def scheduleMission(departurePlanet, destination, fleet, missionType, speed, cargo, fuel, arrivalTime, returnTime):
     mission = Classes.Mission(departurePlanet.owner,
-                    departurePlanet,
-                    destination,
-                    fleet,
-                    missionType,
-                    cargo,
-                    speed,
-                    time.time(),
-                    arrivalTime,
-                    returnTime,
-                    fuel)
+                              departurePlanet,
+                              destination,
+                              fleet,
+                              missionType,
+                              cargo,
+                              speed,
+                              time.time(),
+                              arrivalTime,
+                              returnTime,
+                              fuel)
 
     if missionType == "Deploy":
-        fuel = fuel/2
+        fuel = fuel / 2
 
     # Subtract ships from planet
     for ship in fleet.ships:
@@ -234,8 +255,8 @@ def deploy(mission):
             for i in range(3):
                 DDB.planetList[arrivalPlanet.name].resources[i] += mission.cargo[i]
                 mission.cargo[i] = 0
-            arrivalPlanet.resources[2] += mission.fuel/2
-            del DDB.fleetActivity[mission.departurePlanet.name+str(mission.arrivalTime)]
+            arrivalPlanet.resources[2] += mission.fuel / 2
+            del DDB.fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)]
             for i in range(len(owner.fleets)):
                 if mission == owner.fleets[i]:
                     owner.fleets.pop(i)
@@ -250,7 +271,7 @@ def colonize(mission):
             return
     if time.time() > mission.arrivalTime:
         owner = DDB.playerList[mission.owner]
-        planetName ="Colony" + str(time.time())
+        planetName = "Colony" + str(time.time())
         DDB.createPlanet(planetName, mission.owner, mission.destination)
         while DDB.planetList[planetName].owner != mission.owner:
             planetName = planetName + "0"
@@ -259,7 +280,7 @@ def colonize(mission):
         for ship in mission.fleet.ships:
             DDB.planetList[planetName].commodities[ship] += mission.fleet.ships[ship]
         DDB.planetList[planetName].commodities["Colony Ship"] -= 1
-        DDB.planetList[planetName].resources[2] += mission.fuel/2
+        DDB.planetList[planetName].resources[2] += mission.fuel / 2
         owner.planets.append(DDB.planetList[planetName])
         del DDB.fleetActivity[mission.departurePlanet.name + str(mission.arrivalTime)]
         for i in range(len(owner.fleets)):
@@ -268,9 +289,10 @@ def colonize(mission):
 
 
 defenseList = ["Small Cargo", "Large Cargo", "Light Fighter", "Heavy Fighter", "Cruiser", "Battleship", "Colony Ship",
-                "Recycler", "Espionage Probe", "Bomber", "Solar Satellite", "Destroyer", "Deathstar", "Battlecruiser",
-                "Mega Cargo", "Rocket Launcher", "Light Laser", "Heavy Laser", "Gauss Cannon", "Ion Cannon", "Plasma Turret",
-               "Small Shield Dome", "Large Shield Dome", "Antiballistic Missile", "Interplanetary Missile"]
+               "Recycler", "Espionage Probe", "Bomber", "Solar Satellite", "Destroyer", "Deathstar", "Battlecruiser",
+               "Mega Cargo", "Rocket Launcher", "Light Laser", "Heavy Laser", "Gauss Cannon", "Ion Cannon",
+               "Plasma Turret", "Small Shield Dome", "Large Shield Dome", "Antiballistic Missile",
+               "Interplanetary Missile"]
 
 
 def attack(mission):
@@ -297,14 +319,79 @@ def attack(mission):
     scheduleReturn(mission)
 
 
+def counterEspionage(mission, spyOffset):
+    target = 0
+    for planet in DDB.planetList.values():
+        if mission.destination == planet.coords:
+            target = planet
+    fleetSize = 0
+    for ship in defenseList[:14]:
+        fleetSize += target.commodities[ship]
+    counterChance = min(2**(-spyOffset-2) * mission.fleet.ships["Espionage Probe"] * fleetSize/100, 1)
+    print(counterChance)
+    destroyed = False
+    rand = random.uniform(0, 1)
+    if rand < counterChance:
+        print(rand)
+        destroyed = True
+        for i in range(len(DDB.playerList[mission.departurePlanet.owner].fleets)):
+            if DDB.playerList[mission.departurePlanet.owner].fleets[i] == mission:
+                DDB.playerList[mission.departurePlanet.owner].fleets.pop(i)
+    return [counterChance, destroyed]
+
+
+def espionage(mission):
+    target = 0
+    for planet in DDB.planetList.values():
+        if mission.destination == planet.coords:
+            target = planet
+    spyOffset = mission.departurePlanet.commodities["Espionage Technology"] - target.commodities["Espionage Technology"]
+    spyResult = mission.fleet.ships["Espionage Probe"] + abs(spyOffset) * spyOffset
+    counterStats = counterEspionage(mission, spyOffset)
+    message = {}
+    # Resources
+    message["Resources"] = target.resources
+    if spyResult > 1:
+        # Resources + Fleet
+        fleet = {}
+        for ship in defenseList[:14]:
+            fleet[ship] = target.commodities[ship]
+        message["Fleet"] = fleet
+    if spyResult > 2:
+        defense = {}
+        for item in defenseList[14:]:
+            defense[item] = target.commodities[item]
+        # Resources + Fleet + Defense
+        message["Defense"] = defense
+    if spyResult > 4:
+        # Resources + Fleet + Defense + Buildings
+        buildings = {}
+        for building in SDB.MasterBuildingsList:
+            buildings[building] = target.commodities[building]
+        message["Buildings"] = buildings
+    if spyResult > 6:
+        # Resources + Fleet + Defense + Buildings + Research
+        research = {}
+        for tech in SDB.MasterResearchList:
+            research[tech] = target.commodities[tech]
+        message["Research"] = research
+    if not counterStats[1]:
+        message["Counter Espionage"] = str(counterStats[0])
+    else:
+        message["Counter Espionage"] = "Fleet Destroyed Espionage."
+    print(message)
+    scheduleReturn(mission)
+
+
 missionDictionary = {"Colonize": colonize,
                      "Transport": transport,
                      "Deploy": deploy,
                      "Attack": attack,
                      "Recycle": scheduleReturn,
-                     "Espionage": scheduleReturn,
+                     "Espionage": espionage,
                      "Hold Position": scheduleReturn,
                      "Return": executeReturn}
+
 
 # Execute the missions!
 def executeMissions():

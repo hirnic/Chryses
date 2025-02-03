@@ -5,17 +5,17 @@
 import Classes
 # import SDB
 import random
-import os
-import sys
+# import os
+# import sys
 import time
 import json
 
 galaxiesNo = 9
 solarSystemsNo = 9
 planetsNo = 10
-universeSpeed = 1
+universeSpeed = 100
 updateNumber = 100  # Once every 100 milliseconds
-godMode = False
+godMode = True
 currentPlanet = Classes.Planet("Load Failed", [6, 6, 6], "Pig Farmer", [9999999, 9999999, 9999999, 9999999])
 currentPlayer = Classes.Player("Pig Farmer", [currentPlanet])
 
@@ -36,22 +36,23 @@ uninhabited = [[i+1, j+1, k+1] for i in range(galaxiesNo) for j in range(solarSy
 # mission.departurePlanet.name + str(mission.arrivalTime)
 fleetActivity = {}
 
-def get_save_path(filename):
-    # Check if we're running as a bundled executable
-    if getattr(sys, 'frozen', False):  # This checks if we are in a PyInstaller bundle
-        base_path = sys._MEIPASS  # noinspection PyUnresolvedReferences
-    else:
-        base_path = os.path.abspath(".")
+# def get_save_path(filename):
+#     # Check if we're running as a bundled executable
+#     if getattr(sys, 'frozen', False):  # This checks if we are in a PyInstaller bundle
+#         base_path = sys._MEIPASS  # noinspection PyUnresolvedReferences
+#     else:
+#         base_path = os.path.abspath(".")
+#
+#     # Ensure the save directory exists
+#     save_dir = os.path.join(base_path, 'save_data')
+#     os.makedirs(save_dir, exist_ok=True)  # Create directory if it doesn't exist
+#
+#     return os.path.join(save_dir, filename)
 
-    # Ensure the save directory exists
-    save_dir = os.path.join(base_path, 'save_data')
-    os.makedirs(save_dir, exist_ok=True)  # Create directory if it doesn't exist
-
-    return os.path.join(save_dir, filename)
 
 def saveGame():
     for player in playerList.values():
-        player.fleets=[fleet for fleet in player.fleets if fleet in fleetActivity.values()]  # THIS FIXES A BUG I CANNOT FIND THE SOURCE OF. DO NOT REMOVE!
+        player.fleets = [fleet for fleet in player.fleets if fleet in fleetActivity.values()]  # THIS FIXES A BUG I CANNOT FIND THE SOURCE OF. DO NOT REMOVE!
     game_state = {
         "players": {name: player.toDict() for name, player in playerList.items()},
         "planets": {name: planet.toDict() for name, planet in planetList.items()},
@@ -61,19 +62,13 @@ def saveGame():
         "current_player": currentPlayer.toDict(),
         "last_played": time.time()
     }
-    save_path = get_save_path("zogame_save.json")  # Get correct path
-    with open(save_path, "w") as file:
+    with open("zogame_save.json", "w") as file:
         json.dump(game_state, file, indent=4)
-    print(f"Game saved to {save_path}")
+
 
 def loadGame():
     global playerList, planetList, fleetActivity, universeSpeed, currentPlayer, uninhabited, updateNumber
-    save_path = get_save_path("zogame_save.json")  # Get correct path
-    if not os.path.exists(save_path):
-        print("No save file found.")
-        return
-
-    with open(save_path, "r") as file:
+    with open("zogame_save.json", "r") as file:
         game_state = json.load(file)
 
     # Recreate planets from the game state
@@ -130,7 +125,7 @@ def verifyResourceRequirements(planet, commodity):
     if type(commodity).__name__ == "Building":
         for i in range(len(planet.buildingQueue)-1, -1, -1):
             if planet.buildingQueue[i][0] == commodity:
-                price = planet.getPrice(commodity, planet.buildingQueue[i][1]+1)
+                price = planet.getPrice(commodity, planet.buildingQueue[i][1])
     for i in range(3):
         if resourcesAvailable[i] < price[i]:
             return False
@@ -161,7 +156,6 @@ def cashier(planet, commodity, amount=1):
                 if len(planet.buildingQueue) > 0:
                     timeNeeded = planet.getTime(planet.buildingQueue[-1][0], planet.buildingQueue[-1][1], universeSpeed)
                     startTime = planet.buildingQueue[-1][2] + timeNeeded
-
                 planet.buildingQueue.append([commodity, currentLevel + 1, startTime])
 
         elif type(commodity).__name__ == "Research":
@@ -196,13 +190,15 @@ def cashier(planet, commodity, amount=1):
 def executePurchases():
     for planet in planetList.values():
 
-        for item in planet.buildingQueue:
+        if len(planet.buildingQueue) > 0:
+            item = planet.buildingQueue[0]
             if item[2] + planet.getTime(item[0], item[1] - 1, universeSpeed) < time.time():
                 planet.commodities[item[0].name] += 1
                 # Then update the queues
                 planetList[planet.name].buildingQueue.pop(0)
                 if len(planet.buildingQueue) > 0:
-                    planetList[planet.name].buildingQueue[0][2] = time.time()
+                    item = planet.buildingQueue[0]
+                    item[2] + planet.getTime(item[0], item[1] - 1, universeSpeed)
 
         for item in playerList[planet.owner].researchQueue:
             if item[2] + planet.getTime(item[0], item[1]-1, universeSpeed) < time.time():
@@ -275,8 +271,7 @@ def createPlanet(suggestedName,  owner=None, coords=0):
         resources = [500, 300, 0, 0]
     newPlanet = Classes.Planet(planetName, planetCoordinates, owner, resources)
     if godMode:
-        newPlanet.commodities["Colony Ship"] = 10
-        newPlanet.commodities["Small Cargo"] = 10
+        newPlanet.commodities["Espionage Probe"] = 10
         newPlanet.commodities["Astrophysics"] = 10
         newPlanet.commodities["Research Laboratory"] = 12
         newPlanet.commodities["Shipyard"] = 12

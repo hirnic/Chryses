@@ -6,18 +6,19 @@ import tkinter as tk
 technologyTree = {}
 
 
-
 # Bots can be players too
 class Player:
-    def __init__(self, name, planets, researchQueue=[], fleets=[]):
+    def __init__(self, name, planets, researchQueue=[], fleets=None):
+        if fleets is None:
+            fleets = []
         self.name = name  # Name
         self.planets = planets  # List of all planets (instances) owned by player
         self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
         for i in range(len(researchQueue)):
             self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
         self.fleets = fleets  # All fleet action owned by the player
-        # self.friends = []  # List of friends
         # self.messages = []  # List of messages in player's inbox
+        # self.friends = []  # List of friends
         # self.faction = faction                                # What faction the player belongs to
 
     def __repr__(self):
