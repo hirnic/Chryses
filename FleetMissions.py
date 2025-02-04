@@ -328,11 +328,9 @@ def counterEspionage(mission, spyOffset):
     for ship in defenseList[:14]:
         fleetSize += target.commodities[ship]
     counterChance = min(2**(-spyOffset-2) * mission.fleet.ships["Espionage Probe"] * fleetSize/100, 1)
-    print(counterChance)
     destroyed = False
     rand = random.uniform(0, 1)
     if rand < counterChance:
-        print(rand)
         destroyed = True
         for i in range(len(DDB.playerList[mission.departurePlanet.owner].fleets)):
             if DDB.playerList[mission.departurePlanet.owner].fleets[i] == mission:
@@ -348,33 +346,20 @@ def espionage(mission):
     spyOffset = mission.departurePlanet.commodities["Espionage Technology"] - target.commodities["Espionage Technology"]
     spyResult = mission.fleet.ships["Espionage Probe"] + abs(spyOffset) * spyOffset
     counterStats = counterEspionage(mission, spyOffset)
-    message = {}
-    # Resources
-    message["Resources"] = target.resources
-    if spyResult > 1:
-        # Resources + Fleet
-        fleet = {}
+
+    message = {"Resources": target.resources, "Fleet": {}, "Defense": {}, "Buildings": {}, "Research": {}}
+    if spyResult > 1:  # Resources + Fleet
         for ship in defenseList[:14]:
-            fleet[ship] = target.commodities[ship]
-        message["Fleet"] = fleet
-    if spyResult > 2:
-        defense = {}
+            message["Fleet"] [ship] = target.commodities[ship]
+    if spyResult > 2:  # Resources + Fleet + Defense
         for item in defenseList[14:]:
-            defense[item] = target.commodities[item]
-        # Resources + Fleet + Defense
-        message["Defense"] = defense
-    if spyResult > 4:
-        # Resources + Fleet + Defense + Buildings
-        buildings = {}
+            message["Defense"][item] = target.commodities[item]
+    if spyResult > 4:  # Resources + Fleet + Defense + Buildings
         for building in SDB.MasterBuildingsList:
-            buildings[building] = target.commodities[building]
-        message["Buildings"] = buildings
-    if spyResult > 6:
-        # Resources + Fleet + Defense + Buildings + Research
-        research = {}
+            message["Buildings"][building] = target.commodities[building]
+    if spyResult > 6:  # Resources + Fleet + Defense + Buildings + Research
         for tech in SDB.MasterResearchList:
-            research[tech] = target.commodities[tech]
-        message["Research"] = research
+            message["Research"][tech] = target.commodities[tech]
     if not counterStats[1]:
         message["Counter Espionage"] = str(counterStats[0])
     else:

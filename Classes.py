@@ -17,7 +17,7 @@ class Player:
         for i in range(len(researchQueue)):
             self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
         self.fleets = fleets  # All fleet action owned by the player
-        # self.messages = []  # List of messages in player's inbox
+        self.messages = []  # List of messages in player's inbox
         # self.friends = []  # List of friends
         # self.faction = faction                                # What faction the player belongs to
 

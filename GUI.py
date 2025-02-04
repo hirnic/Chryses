@@ -47,6 +47,9 @@ allButtons = {  # Main Menu Buttons
     "Options Button": tk.Button(root, text="Options"),
     "Quit Button": tk.Button(root, text="Quit"),
 
+    "Save Button": tk.Button(mainFrame, text="Save Game"),
+    "Messages Button": tk.Button(mainFrame, text="Messages"),
+
     # Player Overview buttons
     "Overview": tk.Button(root, text="Overview", height=1),
     "View Buildings": tk.Button(root, text="View Buildings"),
@@ -300,17 +303,19 @@ allThumbnails = {"Default": tk.PhotoImage(file=resource_path("Photos/Default_Ima
                  "Robotics Factory": tk.PhotoImage(file=resource_path("Photos/Robotics_Factory1.png")).subsample(11, 7),
                  "Nanite Factory": tk.PhotoImage(file=resource_path("Photos/Nanite_Factory1.png")).subsample(7, 7),
                  "Shipyard": tk.PhotoImage(file=resource_path("Photos/Shipyard1.png")).subsample(12, 7),
-                 "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(7, 7),
-                 "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(7, 7),
-                 "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(7, 7),
+                 "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Metal_Storage1.png")).subsample(7, 7),
+                 "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Crystal_Storage1.png")).subsample(7, 7),
+                 "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Deuterium_Tank1.png")).subsample(7, 7),
                  "Research Laboratory": tk.PhotoImage(file=resource_path("Photos/Research_Laboratory1.png")).subsample(
                      9, 7),
-                 "Terraformer": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(7, 7),
-                 "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(7, 7)
+                 "Terraformer": tk.PhotoImage(file=resource_path("Photos/Terraformer1.png")).subsample(7, 7),
+                 "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Missile_Silo1.png")).subsample(7, 7)
                  }
 
 allDisplayPhotos = {"Default": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
-                    "Planet Overview": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
+                    "Planet Overview": tk.PhotoImage(file=resource_path("Photos/Planets_Screen1.png")).subsample(2, 2),
+
+                    "Construction Screen": tk.PhotoImage(file=resource_path("Photos/Construction_Screen1.png")).subsample(2, 2),
                     "Metal Mine": tk.PhotoImage(file=resource_path("Photos/Metal_Mine1.png")).subsample(3, 3),
                     "Crystal Mine": tk.PhotoImage(file=resource_path("Photos/Crystal_Mine1.png")).subsample(2, 2),
                     "Deuterium Synthesizer": tk.PhotoImage(
@@ -321,38 +326,18 @@ allDisplayPhotos = {"Default": tk.PhotoImage(file=resource_path("Photos/Default_
                                                                                                                     3),
                     "Nanite Factory": tk.PhotoImage(file=resource_path("Photos/Nanite_Factory1.png")).subsample(2, 2),
                     "Shipyard": tk.PhotoImage(file=resource_path("Photos/Shipyard1.png")).subsample(3, 3),
-                    "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
-                    "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
-                    "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
+                    "Metal Storage": tk.PhotoImage(file=resource_path("Photos/Metal_Storage1.png")).subsample(2, 2),
+                    "Crystal Storage": tk.PhotoImage(file=resource_path("Photos/Crystal_Storage1.png")).subsample(2, 2),
+                    "Deuterium Tank": tk.PhotoImage(file=resource_path("Photos/Deuterium_Tank1.png")).subsample(2, 2),
                     "Research Laboratory": tk.PhotoImage(
                         file=resource_path("Photos/Research_Laboratory1.png")).subsample(3, 3),
-                    "Terraformer": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2),
-                    "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Default_Image.png")).subsample(2, 2)
+                    "Terraformer": tk.PhotoImage(file=resource_path("Photos/Terraformer1.png")).subsample(2, 2),
+                    "Missile Silo": tk.PhotoImage(file=resource_path("Photos/Missile_Silo1.png")).subsample(2, 2),
+
+                    "Research Screen": tk.PhotoImage(file=resource_path("Photos/Research_Screen1.png")).subsample(2,2),
+
+                    "Shipyard Screen": tk.PhotoImage(file=resource_path("Photos/Shipyard_Screen1.png")).subsample(2,2)
                     }
-
-
-# def resize_font(event=None):
-#     for button in allButtons.values():
-#         buttonWidth = button.winfo_width()
-#         textLength = len(button["text"])
-#         buttonHeight = button.winfo_height()
-#         a = int(buttonWidth/textLength)
-#         b = int(0.75 * buttonHeight)
-#         button.config(font=("Arial",min(a,b)))
-#     for button in allLabels.values():
-#         buttonWidth = button.winfo_width()
-#         textLength = len(button["text"])
-#         buttonHeight = button.winfo_height()
-#         a = int(buttonWidth / textLength)
-#         b = int(0.75 * buttonHeight)
-#         button.config(font=("Arial", min(a, b)))
-#     for button in allOptionMenus.values():
-#         buttonWidth = button.winfo_width()
-#         textLength = len(button["text"])
-#         buttonHeight = button.winfo_height()
-#         a = int(buttonWidth / textLength)
-#         b = int(0.75 * buttonHeight)
-#         button.config(font=("Arial", min(a, b)))
 
 
 def update_wraplength(event):
@@ -382,7 +367,6 @@ def formatTime(seconds):
 
 def formatDate(seconds):
     return time.strftime('%m/%d/%Y %H:%M:%S', time.gmtime(seconds))
-
 
 # Create Treeview
 tree = ttk.Treeview(root, columns=("Index", "Planet Name", "Player Name"), show="headings")
@@ -521,6 +505,8 @@ def updateEverything():
     FleetMissions.executeMissions()
     DDB.updateResources()
     # print(time.time()-start)
+    if time.time()%600 == 0:
+        DDB.saveGame()
     canvas.after(DDB.updateNumber, updateEverything)
 
 
@@ -553,16 +539,16 @@ def galaxyScreen():
     galaxy, system = int(allLabels["Galaxy"].cget("text")[-1]), int(allLabels["System"].cget("text")[-1])
     planets = [item for item in DDB.planetList.values() if (item.coords[0] == galaxy and item.coords[1] == system)]
 
-    for i in range(10):
+    for i in range(1,11):
         planetExists = False
         for planet in planets:
             if planet.coords[2] == i:
-                tree.item(treeRows["Row " + str(i + 1)],
-                          values=(str(i + 1), "|   " + planet.name, "|   " + planet.owner))
+                tree.item(treeRows["Row " + str(i)],
+                          values=(str(i), "|   " + planet.name, "|   " + planet.owner))
                 planetExists = True
                 break
         if not planetExists:
-            tree.item(treeRows["Row " + str(i + 1)], values=(str(i + 1), "| ", "| "))
+            tree.item(treeRows["Row " + str(i)], values=(str(i), "| ", "| "))
 
     # Pack Treeview
     tree.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.50)
@@ -822,6 +808,8 @@ def defenseScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
+    allLabels["Picture Frame"].place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.98)
+    allLabels["Picture Frame"].configure(image=allDisplayPhotos["Default"])
     for i in range(10):
         allLabels["Shop Panel " + str(i + 1)].place(
             relx=0.275 + 0.13 * (i % 5), rely=0.625 + 0.185 * (i // 5), relwidth=0.11, relheight=0.175)
@@ -855,6 +843,8 @@ def shipyardScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
+    allLabels["Picture Frame"].place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.98)
+    allLabels["Picture Frame"].configure(image=allDisplayPhotos["Shipyard Screen"])
     for i in range(15):
         allLabels["Shop Panel " + str(i + 1)].place(
             relx=0.25 + 0.0875 * (i % 8), rely=0.625 + 0.185 * (i // 8), relwidth=0.085, relheight=0.175)
@@ -888,6 +878,8 @@ def researchScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
+    allLabels["Picture Frame"].place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.98)
+    allLabels["Picture Frame"].configure(image=allDisplayPhotos["Research Screen"])
     for i in range(16):
         allLabels["Shop Panel " + str(i + 1)].place(
             relx=0.25 + 0.0875 * (i % 8), rely=0.625 + 0.185 * (i // 8), relwidth=0.085, relheight=0.175)
@@ -919,6 +911,8 @@ def constructionScreen():
     sideNav()
     topNav()
     mainFrame.place(relx=0.25, rely=.1, relwidth=.695, relheight=0.5)
+    allLabels["Picture Frame"].place(relx=0.01, rely=0.01, relwidth=0.98, relheight = 0.98)
+    allLabels["Picture Frame"].configure(image=allDisplayPhotos["Construction Screen"])
     for i in range(14):
         allLabels["Shop Panel " + str(i + 1)].place(
             relx=0.25 + 0.1 * (i % 7), rely=0.625 + 0.185 * (i // 7), relwidth=.095, relheight=.175)
@@ -1049,6 +1043,23 @@ def changePlanet(event, planet):
     allLabels["System"].configure(text="System: " + str(currentPlanet.coords[1]))
 
 
+def saveGame():
+    DDB.saveGame()
+    allButtons["Save Button"].configure(text="Game saved successfully!")
+
+
+def checkMessages():
+    global currentView
+    currentView = "Messages"
+    clearGUI()
+    mainFrame.place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.98)
+    allButtons["Messages Button"].place(relx=0.01, rely =0.01, relwidth=0.09, relheight=0.09)
+    allButtons["Messages Button"].configure(text="Exit", command=playerOverview)
+    allLabels["Commodity Info Title"].place(relx=0.01, rely=0.11, relwidth=0.98, relheight=0.09)
+    if currentPlayer.messages == []:
+        allLabels["Commodity Info Title"].configure(text="No messages")
+
+
 def playerOverview():
     global currentCommodity, currentView
     currentCommodity = None
@@ -1068,6 +1079,11 @@ def playerOverview():
              + ":" + str(currentPlanet.coords[1])
              + ":" + str(currentPlanet.coords[2])
              + ")")
+    allButtons["Save Button"].place(relx=0.76, rely=0.85, relwidth=0.23, relheight=0.14)
+    allButtons["Save Button"].configure(text="Save Game", command=saveGame)
+    allButtons["Messages Button"].place(relx=0.76, rely=0.01, relwidth=0.23, relheight=0.14)
+    allButtons["Messages Button"].configure(text="Read Messages", command=checkMessages)
+
     for i in range(4):
         try:
             allLabels["Planet " + str(i + 1) + " Picture"].bind(
@@ -1080,12 +1096,15 @@ def playerOverview():
         allButtons["Left Arrow"].place(relx=0.3725, rely=0.8, relwidth=0.02, relheight=0.175)
         allButtons["Right Arrow"].place(relx=0.8, rely=0.8, relwidth=0.02, relheight=0.175)
 
-    allLabels["Planet 4 Picture"].place(relx=0.8, rely=.8, relwidth=.095, relheight=.175)
-    allLabels["Planet 4 Picture"].configure(image=allThumbnails["Default"])
-    allLabels["Planet 4 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"]))
+    # allLabels["Planet 4 Picture"].place(relx=0.8, rely=.8, relwidth=.095, relheight=.175)
+    # allLabels["Planet 4 Picture"].configure(image=allThumbnails["Default"])
+    # allLabels["Planet 4 Picture"].bind("<Button-1>", lambda event: changePlanet(event, DDB.planetList["Tree House"]))
 
     allLabels["Galaxy"].configure(text="Galaxy: " + str(currentPlanet.coords[0]))
     allLabels["System"].configure(text="System: " + str(currentPlanet.coords[1]))
+
+
+
 
 
 allButtons["Overview"].configure(command=playerOverview)
@@ -1102,26 +1121,29 @@ allLabels["Resource Settings Source 0"].bind("<Button-1>", lambda event: playerO
 def newGame():
     global currentPlayer
     global currentPlanet
-    DDB.newPlayer("Piggy", "Pig Farm")
+    DDB.newPlayer("Piggy", "Planet Piggie")
     DDB.newPlayer("Evil Squirrel", "Tree House")
     DDB.currentPlayer = DDB.playerList["Piggy"]
     currentPlayer = DDB.playerList["Piggy"]
-    currentPlanet = DDB.planetList["Pig Farm"]
-    DDB.planetList["Pig Farm"].commodities["Espionage Probe"] = 10
+    currentPlanet = DDB.planetList["Planet Piggie"]
+    DDB.planetList["Planet Piggie"].commodities["Espionage Probe"] = 10
     for i in range(50):
         DDB.newPlayer("Bot " + str(i), "Planet " + str((2 ^ i) % 53))
     playerOverview()
     updateEverything()
 
 
-viewDictionary = {"Overview": playerOverview,
-                  "Construction": constructionScreen,
-                  "Research": researchScreen,
-                  "Shipyard": shipyardScreen,
-                  "Defense": defenseScreen,
-                  "Galaxy": galaxyScreen,
-                  "Fleets": fleetsScreen,
-                  "Resource Settings": resourceSettings}
+viewDictionary = {
+    "Overview": playerOverview,
+    "Messages": checkMessages,
+    "Construction": constructionScreen,
+    "Research": researchScreen,
+    "Shipyard": shipyardScreen,
+    "Defense": defenseScreen,
+    "Galaxy": galaxyScreen,
+    "Fleets": fleetsScreen,
+    "Resource Settings": resourceSettings
+}
 
 
 #######################################################################################################################
@@ -1154,16 +1176,26 @@ def loadGame():
 
 # This will be the entry point of the game
 
-clearGUI()
-allButtons['New Game Button'].configure(command=newGame)
-allButtons['New Game Button'].place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.15)
-allButtons['Load Game Button'].place(relx=0.2, rely=0.31667, relwidth=0.6, relheight=0.15)
-allButtons['Load Game Button'].configure(command=loadGame)
+def overwriteWarning():
+    clearGUI()
+    allLabels["Planet 1 Picture"].place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.15)
+    allLabels["Planet 1 Picture"].configure(text="Overwrite previously saved game?")
+    allButtons['New Game Button'].configure(text="I don't care. Start new game.", command=newGame)
+    allButtons['New Game Button'].place(relx=0.2, rely=0.26, relwidth=0.6, relheight=0.14)
+    allButtons['Load Game Button'].configure(text="Go back.", command=mainMenu)
+    allButtons['Load Game Button'].place(relx=0.2, rely=0.41, relwidth=0.6, relheight=0.14)
 
 
-# allButtons['Options Button'].place(relx=0.2, rely=0.53333, relwidth=0.6, relheight=0.15)
-# allButtons['Quit Button'].configure(command = root.destroy)
-# allButtons['Quit Button'].place(relx=0.2, rely=0.75, relwidth=0.6, relheight=0.15)
+
+def mainMenu():
+    clearGUI()
+    allButtons['New Game Button'].configure(text="New Game", command=overwriteWarning)
+    allButtons['New Game Button'].place(relx=0.2, rely=0.1, relwidth=0.6, relheight=0.15)
+    allButtons['Load Game Button'].place(relx=0.2, rely=0.31, relwidth=0.6, relheight=0.15)
+    allButtons['Load Game Button'].configure(text="Load Game", command=loadGame)
+    # allButtons['Options Button'].place(relx=0.2, rely=0.53333, relwidth=0.6, relheight=0.15)
+    # allButtons['Quit Button'].configure(command = root.destroy)
+    # allButtons['Quit Button'].place(relx=0.2, rely=0.75, relwidth=0.6, relheight=0.15)
 
 
 #######################################################################################################################
@@ -1172,13 +1204,5 @@ allButtons['Load Game Button'].configure(command=loadGame)
 #######################################################################################################################
 #######################################################################################################################
 
-def on_close():
-    DDB.saveGame()  # Save before closing
-    root.destroy()  # Close the Tkinter window
-
-
-# Bind the window resizing event to the update_font function
-# root.bind('<Configure>', resize_font)
-
-root.protocol("WM_DELETE_WINDOW", on_close)
+mainMenu()
 root.mainloop()
