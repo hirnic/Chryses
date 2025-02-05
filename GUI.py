@@ -14,6 +14,7 @@ import DDB
 import tkinter as tk
 import time
 from tkinter import font
+from tkinter.font import Font
 from tkinter import ttk
 import os
 import sys
@@ -1056,8 +1057,23 @@ def checkMessages():
     allButtons["Messages Button"].place(relx=0.01, rely =0.01, relwidth=0.09, relheight=0.09)
     allButtons["Messages Button"].configure(text="Exit", command=playerOverview)
     allLabels["Commodity Info Title"].place(relx=0.01, rely=0.11, relwidth=0.98, relheight=0.09)
-    if currentPlayer.messages == []:
-        allLabels["Commodity Info Title"].configure(text="No messages")
+    allLabels["Commodity Info Title"].configure(text="No messages")
+    for i in range(len(currentPlayer.messages)):
+            localFont = Font(family="Courier New", size=12)
+            line_height = localFont.metrics("linespace")
+            text = currentPlayer.messages[i].body
+            num_lines = len(text.splitlines())
+            textHeight = line_height * num_lines
+            mainFrameHeight = mainFrame.winfo_height()
+            labelRelHeight = textHeight/mainFrameHeight+0.05
+            print(labelRelHeight)
+            allLabels["Commodity Info Title"].place(relx=0.01, rely=0.11, relwidth=0.98, relheight=labelRelHeight)
+            allLabels["Commodity Info Title"].configure(
+                text="From: " + currentPlayer.messages[i].sender
+                + "    Subject: " + currentPlayer.messages[i].subject
+                + "\n Message: " + currentPlayer.messages[i].body,
+            font = ("Courier New", 12))
+
 
 
 def playerOverview():
@@ -1126,6 +1142,7 @@ def newGame():
     DDB.currentPlayer = DDB.playerList["Piggy"]
     currentPlayer = DDB.playerList["Piggy"]
     currentPlanet = DDB.planetList["Planet Piggie"]
+    Classes.standardMessage(DDB.playerList["Piggy"])
     DDB.planetList["Planet Piggie"].commodities["Espionage Probe"] = 10
     for i in range(50):
         DDB.newPlayer("Bot " + str(i), "Planet " + str((2 ^ i) % 53))

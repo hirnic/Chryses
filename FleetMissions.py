@@ -343,6 +343,7 @@ def espionage(mission):
     for planet in DDB.planetList.values():
         if mission.destination == planet.coords:
             target = planet
+    player = DDB.playerList[mission.owner]
     spyOffset = mission.departurePlanet.commodities["Espionage Technology"] - target.commodities["Espionage Technology"]
     spyResult = mission.fleet.ships["Espionage Probe"] + abs(spyOffset) * spyOffset
     counterStats = counterEspionage(mission, spyOffset)
@@ -364,7 +365,16 @@ def espionage(mission):
         message["Counter Espionage"] = str(counterStats[0])
     else:
         message["Counter Espionage"] = "Fleet Destroyed Espionage."
-    print(message)
+
+    # Here we format the body of the espionage report
+    body = ""
+    body += "Resources: " + str(message["Resources"]) + "\n"
+    body += "Fleet: " + str(message["Fleet"]) + "\n"
+    body += "Defense: " + str(message["Defense"]) + "\n"
+    body += "Buildings: " + str(message["Buildings"]) + "\n"
+    body += "Research: " + str(message["Research"]) + "\n"
+    body += "Counter Espionage: " + message["Counter Espionage"] + "\n"
+    player.messages.append(Classes.Message("System", player.name, body, "Espionage Report"))
     scheduleReturn(mission)
 
 

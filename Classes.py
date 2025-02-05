@@ -8,18 +8,18 @@ technologyTree = {}
 
 # Bots can be players too
 class Player:
-    def __init__(self, name, planets, researchQueue=[], fleets=None):
+    def __init__(self, name, planets, researchQueue=[], fleets=None, messages=None):
         if fleets is None:
             fleets = []
+        if messages is None:
+            messages = []
         self.name = name  # Name
         self.planets = planets  # List of all planets (instances) owned by player
         self.researchQueue = []  # List of all ongoing research [research (instance), current Level + 1, start time]
         for i in range(len(researchQueue)):
             self.researchQueue.append([Research(**researchQueue[i][0]), researchQueue[i][1], researchQueue[i][2]])
         self.fleets = fleets  # All fleet action owned by the player
-        self.messages = []  # List of messages in player's inbox
-        # self.friends = []  # List of friends
-        # self.faction = faction                                # What faction the player belongs to
+        self.messages = messages  # List of messages in player's inbox
 
     def __repr__(self):
         return f"{self.name}"
@@ -30,9 +30,7 @@ class Player:
             "planets": [planet.toDict() for planet in self.planets],
             "researchQueue": [[item[0].toDict(), item[1], item[2]] for item in self.researchQueue],
             "fleets": [mission.toDict() for mission in self.fleets],
-            # "friends": self.friends,
-            # "messages": self.messages,
-            # "factions": self.faction
+            "messages": [message.toDict() for message in self.messages],
             }
 
 
@@ -413,12 +411,24 @@ class Fleet:
         }
 
 
-# class Message:
-#     def __init__(self, sender, recipient, body, occasion):
-#         self.sender = sender  # This is the player who sent the message
-#         self.recipient = recipient  # This is the intended recipient of the message
-#         self.body = body  # This is the text included in the message
-#         self.occasion = occasion  # Construction, mission completion, battle report, etc...
+class Message:
+    def __init__(self, sender, recipient, body, subject):
+        self.sender = sender  #(string) This is the name of the player who sent the message
+        self.recipient = recipient  # (string) This is the intended recipient of the message
+        self.body = body  #(string) This is the text included in the message
+        self.subject = subject  #(string) Construction, mission completion, battle report, etc...
+
+    def toDict(self):
+        return {
+            "sender": self.sender,
+            "recipient": self.recipient,
+            "body": self.body,
+            "subject": self.subject
+        }
+
+def standardMessage(player):
+    message = Message("System", player.name, "Welcome to the game!", "Welcome")
+    player.messages.append(message)
 
 
 class EntryWithPlaceholder(tk.Entry):

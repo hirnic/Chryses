@@ -91,10 +91,9 @@ def loadGame():
         for i in range(len(player.planets)):
             player.planets[i] = planetList[player.planets[i]["name"]]
         for i in range(len(player.fleets)):
-            print("Available Fleet Keys:", fleetActivity.keys())
-            print("Trying to access:",
-                  player.fleets[i]["departurePlanet"]["name"] + str(player.fleets[i]["arrivalTime"]))
             player.fleets[i] = fleetActivity[player.fleets[i]["departurePlanet"]["name"] + str(player.fleets[i]["arrivalTime"])]
+        for i in range(len(player.messages)):
+            player.messages[i] = Classes.Message(**player.messages[i])
 
         playerList[name] = player
 
