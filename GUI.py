@@ -1075,7 +1075,6 @@ def checkMessages():
             font = ("Courier New", 12))
 
 
-
 def playerOverview():
     global currentCommodity, currentView
     currentCommodity = None
